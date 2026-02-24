@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ alumno.nombre_completo }} - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ alumno.nombre_completo }}</h2>
+    <div class="header-actions">
+        <a href="{{ url_for('editar_alumno', id=alumno.id) }}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver</a>
+    </div>
+</div>
+
+<!-- Datos personales -->
+<div class="card">
+    <h3>Datos Personales</h3>
+    <div class="datos-grid">
+        <div class="dato-item">
+            <label>Instrumento Principal:</label>
+            <span>{{ alumno.instrumento_principal or 'No especificado' }}</span>
+        </div>
+        <div class="dato-item">
+            <label>Tipo:</label>
+            <span class="badge {% if alumno.tipo == 'pianista' %}badge-primary{% else %}badge-secondary{% endif %}">
+                {{ alumno.tipo }}
+            </span>
+        </div>
+        <div class="dato-item">
+            <label>Año / Curso:</label>
+            <span>{{ alumno.año }}</span>
+        </div>
+        <div class="dato-item">
+            <label>Estado Académico:</label>
+            <span class="badge badge-{{ alumno.estado_academico }}">{{ alumno.estado_academico }}</span>
+        </div>
+        <div class="dato-item">
+            <label>Estado de Cursada:</label>
+            <span class="badge {% if alumno.estado_cursada == 'activo' %}badge-success{% else %}badge-warning{% endif %}">
+                {{ alumno.estado_cursada }}
+            </span>
+        </div>
+        {% if alumno.año.startswith('Profesorado') and alumno.carrera %}
+        <div class="dato-item">
+            <label>Carrera:</label>
+            <span>{{ alumno.carrera }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if alumno.comentarios %}
+    <div class="comentarios">
+        <label>Comentarios:</label>
+        <p>{{ alumno.comentarios }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Requisitos de Examen -->
+<div class="card requisitos-card">
+    <h3>📋 Requisitos de Examen</h3>
+    
+    {% if requisitos.cumplidos or requisitos.faltantes %}
+    <div class="requisitos-grid">
+        <div class="requisitos-cumplidos">
+            <h4 class="requisitos-title cumplido">✅ Cumplidos</h4>
+            {% if requisitos.cumplidos %}
+            <ul>
+                {% for req in requisitos.cumplidos %}
+                <li>{{ req }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty">Ningún requisito cumplido aún</p>
+            {% endif %}
+        </div>
+        
+        <div class="requisitos-faltantes">
+            <h4 class="requisitos-title faltante">⚠️ Faltantes</h4>
+            {% if requisitos.faltantes %}
+            <ul>
+                {% for req in requisitos.faltantes %}
+                <li>{{ req }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty success">¡Todos los requisitos están cumplidos! ✅</p>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <p>No hay requisitos definidos para este año/curso.</p>
+    {% endif %}
+</div>
+
+<!-- Trabajos Musicales -->
+<div class="card">
+    <div class="card-header">
+        <h3>Trabajos Musicales ({{ trabajos|length }})</h3>
+        <a href="{{ url_for('nuevo_trabajo', id=alumno.id) }}" class="btn btn-primary">➕ Agregar Trabajo</a>
+    </div>
+    
+    {% if trabajos %}
+    <div class="trabajos-list">
+        {% for trabajo in trabajos %}
+        <div class="trabajo-item">
+            <div class="trabajo-header">
+                <h4>{{ trabajo.titulo }}</h4>
+                <div class="trabajo-actions">
+                    <a href="{{ url_for('editar_trabajo', id=trabajo.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+                    <form method="POST" action="{{ url_for('eliminar_trabajo', id=trabajo.id) }}" 
+                          onsubmit="return confirm('¿Está seguro de eliminar este trabajo?');" 
+                          style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="trabajo-datos">
+                <div class="trabajo-badges">
+                    <span class="badge badge-info">{{ trabajo.tipo }}</span>
+                    <span class="badge badge-info">{{ trabajo.estilo }}</span>
+                    <span class="badge badge-info">{{ trabajo.formato }}</span>
+                    <span class="badge {% if trabajo.estado_estudio == 'resuelto' %}badge-success{% elif trabajo.estado_estudio == 'en proceso' %}badge-warning{% else %}badge-secondary{% endif %}">
+                        {{ trabajo.estado_estudio }}
+                    </span>
+                    {% if trabajo.tipo == 'arreglo' %}
+                    <span class="badge badge-info">Arreglo: {{ trabajo.autoría_arreglo }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if trabajo.comentarios %}
+                <div class="trabajo-comentarios">
+                    <strong>Comentarios:</strong> {{ trabajo.comentarios }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay trabajos musicales registrados aún.</p>
+        <a href="{{ url_for('nuevo_trabajo', id=alumno.id) }}" class="btn btn-primary">Agregar primer trabajo</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

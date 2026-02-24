@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ año }} - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Alumnos de {{ año }}</h2>
+    <div class="header-actions">
+        <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver a lista completa</a>
+    </div>
+</div>
+
+<!-- Filtros adicionales -->
+<div class="filtros">
+    <form method="GET" action="{{ url_for('vista_año', ano=año) }}" class="filtros-form">
+        <div class="filtros-grid">
+            <div class="filtro-item">
+                <label for="tipo">Tipo:</label>
+                <select id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    <option value="pianista" {% if request.args.get('tipo') == 'pianista' %}selected{% endif %}>Pianista</option>
+                    <option value="no pianista" {% if request.args.get('tipo') == 'no pianista' %}selected{% endif %}>No Pianista</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label for="estado_academico">Estado Académico:</label>
+                <select id="estado_academico" name="estado_academico">
+                    <option value="">Todos</option>
+                    <option value="regular" {% if request.args.get('estado_academico') == 'regular' %}selected{% endif %}>Regular</option>
+                    <option value="condicional" {% if request.args.get('estado_academico') == 'condicional' %}selected{% endif %}>Condicional</option>
+                    <option value="oyente" {% if request.args.get('estado_academico') == 'oyente' %}selected{% endif %}>Oyente</option>
+                    <option value="libre" {% if request.args.get('estado_academico') == 'libre' %}selected{% endif %}>Libre</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label for="estado_cursada">Estado Cursada:</label>
+                <select id="estado_cursada" name="estado_cursada">
+                    <option value="">Todos</option>
+                    <option value="activo" {% if request.args.get('estado_cursada') == 'activo' %}selected{% endif %}>Activo</option>
+                    <option value="abandonó" {% if request.args.get('estado_cursada') == 'abandonó' %}selected{% endif %}>Abandonó</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="filtros-actions">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <a href="{{ url_for('vista_año', ano=año) }}" class="btn btn-link">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen -->
+<div class="resumen-año">
+    <p><strong>Total de alumnos:</strong> {{ alumnos|length }}</p>
+</div>
+
+<!-- Lista de alumnos -->
+<div class="table-container">
+    {% if alumnos %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Apellido</th>
+                <th>Nombre</th>
+                <th>Instrumento</th>
+                <th>Tipo</th>
+                <th>Estado Académico</th>
+                <th>Estado Cursada</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.apellido }}</td>
+                <td>{{ alumno.nombre }}</td>
+                <td>{{ alumno.instrumento_principal or '-' }}</td>
+                <td>
+                    <span class="badge {% if alumno.tipo == 'pianista' %}badge-primary{% else %}badge-secondary{% endif %}">
+                        {{ alumno.tipo }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge badge-{{ alumno.estado_academico }}">
+                        {{ alumno.estado_academico }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if alumno.estado_cursada == 'activo' %}badge-success{% else %}badge-warning{% endif %}">
+                        {{ alumno.estado_cursada }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('perfil_alumno', id=alumno.id) }}" class="btn btn-sm btn-primary">Ver</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay alumnos registrados en este año con los filtros seleccionados.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

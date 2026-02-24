@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{% if alumno %}Editar Alumno{% else %}Nuevo Alumno{% endif %} - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{% if alumno %}Editar Alumno{% else %}Nuevo Alumno{% endif %}</h2>
+    <a href="{% if alumno %}{{ url_for('perfil_alumno', id=alumno.id) }}{% else %}{{ url_for('lista_alumnos') }}{% endif %}" 
+       class="btn btn-link">← Volver</a>
+</div>
+
+<div class="card">
+    <form method="POST" class="form">
+        <div class="form-group">
+            <label for="nombre">Nombre *</label>
+            <input type="text" id="nombre" name="nombre" required 
+                   value="{{ alumno.nombre if alumno else '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="apellido">Apellido *</label>
+            <input type="text" id="apellido" name="apellido" required 
+                   value="{{ alumno.apellido if alumno else '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="instrumento_principal">Instrumento Principal</label>
+            <input type="text" id="instrumento_principal" name="instrumento_principal" 
+                   value="{{ alumno.instrumento_principal if alumno else '' }}" 
+                   placeholder="Ej: Piano, Guitarra, Violín...">
+        </div>
+        
+        <div class="form-group">
+            <label for="tipo">Tipo de Alumno *</label>
+            <select id="tipo" name="tipo" required>
+                <option value="">Seleccionar...</option>
+                <option value="pianista" {% if alumno and alumno.tipo == 'pianista' %}selected{% endif %}>Pianista</option>
+                <option value="no pianista" {% if alumno and alumno.tipo == 'no pianista' %}selected{% endif %}>No Pianista</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="año">Año / Curso *</label>
+            <select id="año" name="año" required>
+                <option value="">Seleccionar...</option>
+                <option value="FOBA Educación" {% if alumno and alumno.año == 'FOBA Educación' %}selected{% endif %}>FOBA Educación</option>
+                <option value="FOBA 2 (canto)" {% if alumno and alumno.año == 'FOBA 2 (canto)' %}selected{% endif %}>FOBA 2 (canto)</option>
+                <option value="FOBA 3" {% if alumno and alumno.año == 'FOBA 3' %}selected{% endif %}>FOBA 3</option>
+                <option value="Profesorado 1" {% if alumno and alumno.año == 'Profesorado 1' %}selected{% endif %}>Profesorado 1</option>
+                <option value="Profesorado 2" {% if alumno and alumno.año == 'Profesorado 2' %}selected{% endif %}>Profesorado 2</option>
+                <option value="Profesorado 3" {% if alumno and alumno.año == 'Profesorado 3' %}selected{% endif %}>Profesorado 3</option>
+                <option value="Profesorado 4" {% if alumno and alumno.año == 'Profesorado 4' %}selected{% endif %}>Profesorado 4</option>
+                <option value="Técnica" {% if alumno and alumno.año == 'Técnica' %}selected{% endif %}>Técnica</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="estado_academico">Estado Académico *</label>
+            <select id="estado_academico" name="estado_academico" required>
+                {% if not alumno %}
+                <option value="regular" selected>Regular</option>
+                <option value="condicional">Condicional</option>
+                <option value="oyente">Oyente</option>
+                <option value="libre">Libre</option>
+                {% else %}
+                <option value="">Seleccionar...</option>
+                <option value="regular" {% if alumno.estado_academico == 'regular' %}selected{% endif %}>Regular</option>
+                <option value="condicional" {% if alumno.estado_academico == 'condicional' %}selected{% endif %}>Condicional</option>
+                <option value="oyente" {% if alumno.estado_academico == 'oyente' %}selected{% endif %}>Oyente</option>
+                <option value="libre" {% if alumno.estado_academico == 'libre' %}selected{% endif %}>Libre</option>
+                {% endif %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="estado_cursada">Estado de Cursada *</label>
+            <select id="estado_cursada" name="estado_cursada" required>
+                {% if not alumno %}
+                <option value="activo" selected>Activo</option>
+                <option value="abandonó">Abandonó</option>
+                {% else %}
+                <option value="">Seleccionar...</option>
+                <option value="activo" {% if alumno.estado_cursada == 'activo' %}selected{% endif %}>Activo</option>
+                <option value="abandonó" {% if alumno.estado_cursada == 'abandonó' %}selected{% endif %}>Abandonó</option>
+                {% endif %}
+            </select>
+        </div>
+        
+        <div class="form-group" id="carrera-group" style="display: none;">
+            <label for="carrera">Carrera</label>
+            <select id="carrera" name="carrera">
+                <option value="">Seleccionar...</option>
+                <option value="Educación musical" {% if alumno and alumno.carrera == 'Educación musical' %}selected{% endif %}>Educación musical</option>
+                <option value="Instrumento" {% if alumno and alumno.carrera == 'Instrumento' %}selected{% endif %}>Instrumento</option>
+                <option value="Dirección coral" {% if alumno and alumno.carrera == 'Dirección coral' %}selected{% endif %}>Dirección coral</option>
+                <option value="Composición" {% if alumno and alumno.carrera == 'Composición' %}selected{% endif %}>Composición</option>
+            </select>
+            <small class="form-help">Solo para alumnos de Profesorado</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="comentarios">Comentarios Generales</label>
+            <textarea id="comentarios" name="comentarios" rows="4" 
+                      placeholder="Notas, observaciones, información adicional...">{{ alumno.comentarios if alumno else '' }}</textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if alumno %}Guardar Cambios{% else %}Crear Alumno{% endif %}
+            </button>
+            <a href="{% if alumno %}{{ url_for('perfil_alumno', id=alumno.id) }}{% else %}{{ url_for('lista_alumnos') }}{% endif %}" 
+               class="btn btn-link">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

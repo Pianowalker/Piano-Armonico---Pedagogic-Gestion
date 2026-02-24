@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Alumnos - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Lista de Alumnos</h2>
+    <div class="header-info">
+        <span class="recuento-alumnos">Total: <strong>{{ alumnos|length }}</strong> alumno{{ 's' if alumnos|length != 1 else '' }}</span>
+        <a href="{{ url_for('nuevo_alumno') }}" class="btn btn-primary">➕ Nuevo Alumno</a>
+    </div>
+</div>
+
+<!-- Filtros y búsqueda -->
+<div class="filtros">
+    <form method="GET" action="{{ url_for('lista_alumnos') }}" class="filtros-form">
+        <div class="filtros-grid">
+            <div class="filtro-item">
+                <label for="busqueda">Buscar:</label>
+                <input type="text" id="busqueda" name="busqueda" 
+                       value="{{ request.args.get('busqueda', '') }}" 
+                       placeholder="Nombre o apellido">
+            </div>
+            
+            <div class="filtro-item">
+                <label for="año">Año:</label>
+                <select id="año" name="año">
+                    <option value="">Todos</option>
+                    <option value="FOBA Educación" {% if request.args.get('año') == 'FOBA Educación' %}selected{% endif %}>FOBA Educación</option>
+                    <option value="FOBA 2 (canto)" {% if request.args.get('año') == 'FOBA 2 (canto)' %}selected{% endif %}>FOBA 2 (canto)</option>
+                    <option value="FOBA 3" {% if request.args.get('año') == 'FOBA 3' %}selected{% endif %}>FOBA 3</option>
+                    <option value="Profesorado 1" {% if request.args.get('año') == 'Profesorado 1' %}selected{% endif %}>Profesorado 1</option>
+                    <option value="Profesorado 2" {% if request.args.get('año') == 'Profesorado 2' %}selected{% endif %}>Profesorado 2</option>
+                    <option value="Profesorado 3" {% if request.args.get('año') == 'Profesorado 3' %}selected{% endif %}>Profesorado 3</option>
+                    <option value="Profesorado 4" {% if request.args.get('año') == 'Profesorado 4' %}selected{% endif %}>Profesorado 4</option>
+                    <option value="Técnica" {% if request.args.get('año') == 'Técnica' %}selected{% endif %}>Técnica</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label for="tipo">Tipo:</label>
+                <select id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    <option value="pianista" {% if request.args.get('tipo') == 'pianista' %}selected{% endif %}>Pianista</option>
+                    <option value="no pianista" {% if request.args.get('tipo') == 'no pianista' %}selected{% endif %}>No Pianista</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label for="estado_academico">Estado Académico:</label>
+                <select id="estado_academico" name="estado_academico">
+                    <option value="">Todos</option>
+                    <option value="regular" {% if request.args.get('estado_academico') == 'regular' %}selected{% endif %}>Regular</option>
+                    <option value="condicional" {% if request.args.get('estado_academico') == 'condicional' %}selected{% endif %}>Condicional</option>
+                    <option value="oyente" {% if request.args.get('estado_academico') == 'oyente' %}selected{% endif %}>Oyente</option>
+                    <option value="libre" {% if request.args.get('estado_academico') == 'libre' %}selected{% endif %}>Libre</option>
+                </select>
+            </div>
+            
+            <div class="filtro-item">
+                <label for="estado_cursada">Estado Cursada:</label>
+                <select id="estado_cursada" name="estado_cursada">
+                    <option value="">Todos</option>
+                    <option value="activo" {% if request.args.get('estado_cursada') == 'activo' %}selected{% endif %}>Activo</option>
+                    <option value="abandonó" {% if request.args.get('estado_cursada') == 'abandonó' %}selected{% endif %}>Abandonó</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="filtros-actions">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla de alumnos -->
+<div class="table-container">
+    {% if alumnos %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Apellido</th>
+                <th>Nombre</th>
+                <th>Instrumento</th>
+                <th>Año</th>
+                <th>Tipo</th>
+                <th>Estado Académico</th>
+                <th>Estado Cursada</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for alumno in alumnos %}
+            <tr>
+                <td>{{ alumno.apellido }}</td>
+                <td>{{ alumno.nombre }}</td>
+                <td>{{ alumno.instrumento_principal or '-' }}</td>
+                <td>{{ alumno.año }}</td>
+                <td>
+                    <span class="badge {% if alumno.tipo == 'pianista' %}badge-primary{% else %}badge-secondary{% endif %}">
+                        {{ alumno.tipo }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge badge-{{ alumno.estado_academico }}">
+                        {{ alumno.estado_academico }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if alumno.estado_cursada == 'activo' %}badge-success{% else %}badge-warning{% endif %}">
+                        {{ alumno.estado_cursada }}
+                    </span>
+                </td>
+                <td>
+                    <div class="acciones-lista">
+                        <a href="{{ url_for('perfil_alumno', id=alumno.id) }}" class="btn btn-sm btn-primary">Ver</a>
+                        <form method="POST" action="{{ url_for('eliminar_alumno', id=alumno.id) }}" 
+                              onsubmit="return confirm('¿Está seguro de eliminar al alumno {{ alumno.nombre_completo }}? Esta acción no se puede deshacer.');" 
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar alumno">🗑️</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No se encontraron alumnos con los filtros seleccionados.</p>
+        <a href="{{ url_for('nuevo_alumno') }}" class="btn btn-primary">Crear primer alumno</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Accesos rápidos por año -->
+<div class="accesos-rapidos">
+    <h3>Accesos rápidos por año:</h3>
+    <div class="año-links">
+        <a href="{{ url_for('vista_año', ano='FOBA Educación') }}">FOBA Educación</a>
+        <a href="{{ url_for('vista_año', ano='FOBA 2 (canto)') }}">FOBA 2</a>
+        <a href="{{ url_for('vista_año', ano='FOBA 3') }}">FOBA 3</a>
+        <a href="{{ url_for('vista_año', ano='Profesorado 1') }}">Profesorado 1</a>
+        <a href="{{ url_for('vista_año', ano='Profesorado 2') }}">Profesorado 2</a>
+        <a href="{{ url_for('vista_año', ano='Profesorado 3') }}">Profesorado 3</a>
+        <a href="{{ url_for('vista_año', ano='Profesorado 4') }}">Profesorado 4</a>
+        <a href="{{ url_for('vista_año', ano='Técnica') }}">Técnica</a>
+    </div>
+</div>
+{% endblock %}
+
