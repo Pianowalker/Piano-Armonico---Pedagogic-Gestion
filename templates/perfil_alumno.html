@@ -7,6 +7,7 @@
     <h2>{{ alumno.nombre_completo }}</h2>
     <div class="header-actions">
         <a href="{{ url_for('editar_alumno', id=alumno.id) }}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="btn btn-secondary">📓 Seguimiento de clases</a>
         <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver</a>
     </div>
 </div>
