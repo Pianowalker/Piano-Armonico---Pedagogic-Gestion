@@ -4,7 +4,8 @@ Backend principal con Flask
 """
 
 from flask import Flask, render_template, request, redirect, url_for
-from models import db, Alumno, TrabajoMusical
+from datetime import date
+from models import db, Alumno, TrabajoMusical, SeguimientoClase
 from validaciones import validar_requisitos_examen
 from sqlalchemy import inspect, text
 
@@ -101,10 +102,58 @@ def perfil_alumno(id):
     # Validar requisitos de examen
     requisitos = validar_requisitos_examen(alumno, trabajos)
     
-    return render_template('perfil_alumno.html', 
-                         alumno=alumno, 
-                         trabajos=trabajos,
-                         requisitos=requisitos)
+    return render_template(
+        'perfil_alumno.html',
+        alumno=alumno,
+        trabajos=trabajos,
+        requisitos=requisitos,
+    )
+
+
+@app.route('/alumnos/<int:id>/seguimiento', methods=['GET', 'POST'])
+def seguimiento_alumno(id):
+    """Página de seguimiento clase a clase de un alumno"""
+    alumno = Alumno.query.get_or_404(id)
+    error = None
+    
+    if request.method == 'POST':
+        comentarios = (request.form.get('comentarios') or '').strip()
+        fecha_str = (request.form.get('fecha') or '').strip()
+        
+        if not comentarios:
+            error = 'Los comentarios no pueden estar vacíos.'
+        else:
+            if fecha_str:
+                try:
+                    fecha_valor = date.fromisoformat(fecha_str)
+                except ValueError:
+                    fecha_valor = date.today()
+            else:
+                fecha_valor = date.today()
+            
+            seguimiento = SeguimientoClase(
+                fecha=fecha_valor,
+                comentarios=comentarios,
+                alumno_id=alumno.id,
+            )
+            db.session.add(seguimiento)
+            db.session.commit()
+            return redirect(url_for('seguimiento_alumno', id=alumno.id))
+    
+    seguimientos = (
+        SeguimientoClase.query
+        .filter_by(alumno_id=alumno.id)
+        .order_by(SeguimientoClase.fecha.asc(), SeguimientoClase.id.asc())
+        .all()
+    )
+    
+    return render_template(
+        'seguimiento_alumno.html',
+        alumno=alumno,
+        seguimientos=seguimientos,
+        error=error,
+        hoy=date.today().isoformat(),
+    )
 
 @app.route('/alumnos/<int:id>/editar', methods=['GET', 'POST'])
 def editar_alumno(id):

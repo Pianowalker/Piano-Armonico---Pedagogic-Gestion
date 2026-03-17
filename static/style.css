@@ -532,6 +532,40 @@ main {
     font-size: 0.9rem;
 }
 
+/* Seguimiento de clases */
+.seguimientos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.seguimiento-item {
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    background-color: #fdfdfd;
+    border: 1px solid #e2e6ea;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.seguimiento-header {
+    margin-bottom: 0.5rem;
+    border-bottom: 1px dashed #ced4da;
+    padding-bottom: 0.4rem;
+}
+
+.seguimiento-fecha {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 0.95rem;
+}
+
+.seguimiento-comentarios p {
+    margin-top: 0.25rem;
+    white-space: pre-wrap;
+    color: #444;
+    font-size: 0.95rem;
+}
+
 /* Empty state */
 .empty-state {
     text-align: center;

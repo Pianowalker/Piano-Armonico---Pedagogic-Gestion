@@ -3,6 +3,8 @@ Modelos de datos para la aplicación Piano Armónico
 Usa SQLAlchemy para facilitar migración futura a otros SGBD
 """
 
+from datetime import date
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -24,6 +26,14 @@ class Alumno(db.Model):
     
     # Relación con trabajos musicales
     trabajos = db.relationship('TrabajoMusical', backref='alumno', lazy=True, cascade='all, delete-orphan')
+    # Relación con seguimientos de clase
+    seguimientos = db.relationship(
+        'SeguimientoClase',
+        backref='alumno',
+        lazy=True,
+        cascade='all, delete-orphan',
+        order_by='SeguimientoClase.fecha'
+    )
     
     def __repr__(self):
         return f'<Alumno {self.apellido}, {self.nombre}>'
@@ -48,4 +58,17 @@ class TrabajoMusical(db.Model):
     
     def __repr__(self):
         return f'<TrabajoMusical {self.titulo}>'
+
+
+class SeguimientoClase(db.Model):
+    """Modelo de seguimiento clase a clase de un alumno"""
+    __tablename__ = 'seguimientos_clase'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.Date, nullable=False, default=date.today)
+    comentarios = db.Column(db.Text, nullable=False)
+    alumno_id = db.Column(db.Integer, db.ForeignKey('alumnos.id'), nullable=False)
+    
+    def __repr__(self):
+        return f'<SeguimientoClase {self.fecha} - Alumno {self.alumno_id}>'
 
