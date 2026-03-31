@@ -12,21 +12,14 @@
 </div>
 
 <div class="card">
-    <form method="GET" action="{{ url_for('horarios') }}" class="filtros-form">
-        <div class="filtros-grid">
-            <div class="filtro-item">
-                <label for="day">Día</label>
-                <select id="day" name="day">
-                    {% for d in dias %}
-                    <option value="{{ d }}" {% if d == day %}selected{% endif %}>{{ d }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-        <div class="filtros-actions">
-            <button type="submit" class="btn btn-secondary">Ver</button>
-        </div>
-    </form>
+    <div class="dias-selector">
+        {% for d in dias %}
+        <a href="{{ url_for('horarios', day=d) }}"
+           class="btn {% if d == day %}btn-primary{% else %}btn-secondary{% endif %}">
+            {{ d | capitalize }}
+        </a>
+        {% endfor %}
+    </div>
 </div>
 
 <div class="table-container">

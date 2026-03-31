@@ -365,6 +365,11 @@ main {
     border-bottom: none;
 }
 
+.dias-selector {
+    display: flex;
+    gap: 0.75rem;
+}
+
 /* Horarios */
 .data-table-horarios td {
     vertical-align: top;
