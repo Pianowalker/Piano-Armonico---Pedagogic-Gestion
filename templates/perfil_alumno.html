@@ -40,6 +40,20 @@
                 {{ alumno.estado_cursada }}
             </span>
         </div>
+        <div class="dato-item">
+            <label>Horario:</label>
+            <span>
+                {% if alumno.day and alumno.time %}
+                    {{ alumno.day }} {{ alumno.time }}
+                {% elif alumno.day and not alumno.time %}
+                    {{ alumno.day }} (sin hora)
+                {% elif alumno.time and not alumno.day %}
+                    {{ alumno.time }} (sin día)
+                {% else %}
+                    Sin asignar
+                {% endif %}
+            </span>
+        </div>
         {% if alumno.año.startswith('Profesorado') and alumno.carrera %}
         <div class="dato-item">
             <label>Carrera:</label>

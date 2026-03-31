@@ -365,6 +365,43 @@ main {
     border-bottom: none;
 }
 
+/* Horarios */
+.data-table-horarios td {
+    vertical-align: top;
+}
+
+.slot-libre td {
+    background-color: #ffffff;
+}
+
+.slot-ocupado td {
+    background-color: #eef2ff;
+}
+
+.horario-alumnos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.horario-alumno {
+    color: #333;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    background: rgba(102, 126, 234, 0.08);
+}
+
+.horario-alumno:hover {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.horario-libre {
+    color: #666;
+    font-style: italic;
+}
+
 .acciones-lista {
     display: flex;
     gap: 0.5rem;
@@ -548,9 +585,23 @@ main {
 }
 
 .seguimiento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.5rem;
     border-bottom: 1px dashed #ced4da;
     padding-bottom: 0.4rem;
+}
+
+.seguimiento-actions {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.btn-icon {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.8rem;
+    line-height: 1;
 }
 
 .seguimiento-fecha {

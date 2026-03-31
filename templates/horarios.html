@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Horarios - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Horarios</h2>
+        <p class="subtitle">Agenda visual por día (slots cada 15 minutos)</p>
+    </div>
+    <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver a alumnos</a>
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('horarios') }}" class="filtros-form">
+        <div class="filtros-grid">
+            <div class="filtro-item">
+                <label for="day">Día</label>
+                <select id="day" name="day">
+                    {% for d in dias %}
+                    <option value="{{ d }}" {% if d == day %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="filtros-actions">
+            <button type="submit" class="btn btn-secondary">Ver</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="data-table data-table-horarios">
+        <thead>
+            <tr>
+                <th style="width: 120px;">Hora</th>
+                <th>Alumnos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in slots %}
+            {% set alumnos = alumnos_por_hora.get(slot, []) %}
+            <tr class="{% if alumnos %}slot-ocupado{% else %}slot-libre{% endif %}">
+                <td><strong>{{ slot }}</strong></td>
+                <td>
+                    {% if alumnos %}
+                        <div class="horario-alumnos">
+                            {% for alumno in alumnos %}
+                                <a class="horario-alumno" href="{{ url_for('perfil_alumno', id=alumno.id) }}">
+                                    {{ alumno.nombre_completo }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="horario-libre">Libre</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
