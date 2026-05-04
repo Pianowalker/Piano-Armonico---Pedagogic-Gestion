@@ -198,10 +198,10 @@ def seguimiento_alumno(id):
     seguimientos = (
         SeguimientoClase.query
         .filter_by(alumno_id=alumno.id)
-        .order_by(SeguimientoClase.fecha.asc(), SeguimientoClase.id.asc())
+        .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
         .all()
     )
-    
+
     return render_template(
         'seguimiento_alumno.html',
         alumno=alumno,
@@ -317,7 +317,7 @@ def editar_seguimiento(id):
     seguimientos = (
         SeguimientoClase.query
         .filter_by(alumno_id=alumno.id)
-        .order_by(SeguimientoClase.fecha.asc(), SeguimientoClase.id.asc())
+        .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
         .all()
     )
 
