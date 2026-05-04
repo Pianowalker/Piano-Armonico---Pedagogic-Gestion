@@ -39,7 +39,7 @@
                     {% if alumnos %}
                         <div class="horario-alumnos">
                             {% for alumno in alumnos %}
-                                <a class="horario-alumno" href="{{ url_for('perfil_alumno', id=alumno.id) }}">
+                                <a class="horario-alumno" href="{{ url_for('seguimiento_alumno', id=alumno.id) }}">
                                     {{ alumno.nombre_completo }}
                                 </a>
                             {% endfor %}
