@@ -4,7 +4,8 @@ Backend principal con Flask
 """
 
 from flask import Flask, render_template, request, redirect, url_for
-from datetime import date
+from datetime import date, datetime, time as dt_time, timedelta
+from typing import Optional
 from models import db, Alumno, TrabajoMusical, SeguimientoClase
 from validaciones import validar_requisitos_examen
 from sqlalchemy import inspect, text
@@ -29,11 +30,63 @@ with app.app_context():
             db.session.execute(text('ALTER TABLE alumnos ADD COLUMN carrera VARCHAR(50)'))
             db.session.commit()
             print("✓ Columna 'carrera' agregada exitosamente a la tabla 'alumnos'")
+
+        # Migración: agregar columnas 'day' y 'time' (horario) si no existen
+        # Nota: NO se validan como obligatorias; pueden ser NULL.
+        if 'day' not in columns:
+            db.session.execute(text('ALTER TABLE alumnos ADD COLUMN day VARCHAR(20)'))
+            db.session.commit()
+            print("✓ Columna 'day' agregada exitosamente a la tabla 'alumnos'")
+
+        if 'time' not in columns:
+            db.session.execute(text('ALTER TABLE alumnos ADD COLUMN time VARCHAR(5)'))
+            db.session.commit()
+            print("✓ Columna 'time' agregada exitosamente a la tabla 'alumnos'")
     except Exception as e:
         # Si la tabla no existe aún, create_all() la creará con todas las columnas
         # Si hay otro error, lo mostramos pero no detenemos la aplicación
         print(f"Nota sobre migración de base de datos: {e}")
         db.session.rollback()
+
+
+DIAS_HORARIOS = ['lunes', 'martes', 'miércoles']
+
+RANGOS_HORARIOS = {
+    'lunes': ('18:00', '22:00'),
+    'martes': ('08:00', '16:00'),
+    'miércoles': ('18:00', '22:00'),
+}
+
+INTERVALO_MINUTOS = 15
+
+
+def _parse_hhmm(value: str) -> dt_time:
+    return datetime.strptime(value, '%H:%M').time()
+
+
+def generar_slots(day: str) -> list[str]:
+    """Genera slots (HH:mm) para el día. No persiste nada en DB."""
+    if day not in RANGOS_HORARIOS:
+        return []
+
+    inicio_str, fin_str = RANGOS_HORARIOS[day]
+    inicio = datetime.combine(date.today(), _parse_hhmm(inicio_str))
+    fin = datetime.combine(date.today(), _parse_hhmm(fin_str))
+
+    slots: list[str] = []
+    actual = inicio
+    while actual <= fin:
+        slots.append(actual.strftime('%H:%M'))
+        actual += timedelta(minutes=INTERVALO_MINUTOS)
+    return slots
+
+
+def normalizar_horario(form_value: Optional[str]) -> Optional[str]:
+    """Normaliza inputs vacíos a None. No valida obligatoriedad."""
+    if form_value is None:
+        return None
+    value = form_value.strip()
+    return value or None
 
 @app.route('/')
 def index():
@@ -85,6 +138,8 @@ def nuevo_alumno():
             estado_academico=request.form['estado_academico'],
             estado_cursada=request.form['estado_cursada'],
             carrera=request.form.get('carrera', '') if request.form.get('año', '').startswith('Profesorado') else None,
+            day=normalizar_horario(request.form.get('day')),
+            time=normalizar_horario(request.form.get('time')),
             comentarios=request.form.get('comentarios', '')
         )
         db.session.add(alumno)
@@ -143,10 +198,10 @@ def seguimiento_alumno(id):
     seguimientos = (
         SeguimientoClase.query
         .filter_by(alumno_id=alumno.id)
-        .order_by(SeguimientoClase.fecha.asc(), SeguimientoClase.id.asc())
+        .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
         .all()
     )
-    
+
     return render_template(
         'seguimiento_alumno.html',
         alumno=alumno,
@@ -169,6 +224,8 @@ def editar_alumno(id):
         alumno.estado_academico = request.form['estado_academico']
         alumno.estado_cursada = request.form['estado_cursada']
         alumno.carrera = request.form.get('carrera', '') if request.form.get('año', '').startswith('Profesorado') else None
+        alumno.day = normalizar_horario(request.form.get('day'))
+        alumno.time = normalizar_horario(request.form.get('time'))
         alumno.comentarios = request.form.get('comentarios', '')
         
         db.session.commit()
@@ -234,6 +291,56 @@ def eliminar_trabajo(id):
     db.session.commit()
     return redirect(url_for('perfil_alumno', id=alumno_id))
 
+@app.route('/seguimientos/<int:id>/editar', methods=['GET', 'POST'])
+def editar_seguimiento(id):
+    """Editar seguimiento de clase"""
+    seguimiento = SeguimientoClase.query.get_or_404(id)
+    alumno = seguimiento.alumno
+    error = None
+
+    if request.method == 'POST':
+        comentarios = (request.form.get('comentarios') or '').strip()
+        fecha_str = (request.form.get('fecha') or '').strip()
+
+        if not comentarios:
+            error = 'Los comentarios no pueden estar vacíos.'
+        else:
+            if fecha_str:
+                try:
+                    seguimiento.fecha = date.fromisoformat(fecha_str)
+                except ValueError:
+                    pass
+            seguimiento.comentarios = comentarios
+            db.session.commit()
+            return redirect(url_for('seguimiento_alumno', id=alumno.id))
+
+    seguimientos = (
+        SeguimientoClase.query
+        .filter_by(alumno_id=alumno.id)
+        .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
+        .all()
+    )
+
+    return render_template(
+        'seguimiento_alumno.html',
+        alumno=alumno,
+        seguimientos=seguimientos,
+        error=error,
+        hoy=date.today().isoformat(),
+        editando=seguimiento,
+    )
+
+
+@app.route('/seguimientos/<int:id>/eliminar', methods=['POST'])
+def eliminar_seguimiento(id):
+    """Eliminar seguimiento de clase"""
+    seguimiento = SeguimientoClase.query.get_or_404(id)
+    alumno_id = seguimiento.alumno_id
+    db.session.delete(seguimiento)
+    db.session.commit()
+    return redirect(url_for('seguimiento_alumno', id=alumno_id))
+
+
 @app.route('/ano/<ano>')
 def vista_año(ano):
     """Vista de alumnos por año/curso"""
@@ -258,6 +365,40 @@ def vista_año(ano):
     alumnos = query.order_by(Alumno.apellido, Alumno.nombre).all()
     
     return render_template('vista_año.html', año=año, alumnos=alumnos)
+
+
+@app.route('/horarios')
+def horarios():
+    """Agenda visual por día: slots generados dinámicamente."""
+    day = (request.args.get('day') or 'lunes').strip().lower()
+    if day not in DIAS_HORARIOS:
+        day = 'lunes'
+
+    slots = generar_slots(day)
+
+    alumnos = (
+        Alumno.query
+        .filter(Alumno.day == day)
+        .filter(Alumno.time.isnot(None))
+        .filter(Alumno.time != '')
+        .filter(Alumno.estado_cursada == 'activo')
+        .order_by(Alumno.time.asc(), Alumno.apellido.asc(), Alumno.nombre.asc())
+        .all()
+    )
+
+    alumnos_por_hora: dict[str, list[Alumno]] = {}
+    for a in alumnos:
+        if not a.time:
+            continue
+        alumnos_por_hora.setdefault(a.time, []).append(a)
+
+    return render_template(
+        'horarios.html',
+        day=day,
+        dias=DIAS_HORARIOS,
+        slots=slots,
+        alumnos_por_hora=alumnos_por_hora,
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)

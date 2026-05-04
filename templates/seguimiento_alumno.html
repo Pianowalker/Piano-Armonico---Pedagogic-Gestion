@@ -12,35 +12,38 @@
 </div>
 
 <div class="card">
-    <h3>Nuevo seguimiento</h3>
-    
+    <h3>{% if editando %}Editar seguimiento{% else %}Nuevo seguimiento{% endif %}</h3>
+
     {% if error %}
     <div class="alert alert-danger">
         {{ error }}
     </div>
     {% endif %}
-    
-    <form method="POST" action="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="form">
+
+    <form method="POST" action="{% if editando %}{{ url_for('editar_seguimiento', id=editando.id) }}{% else %}{{ url_for('seguimiento_alumno', id=alumno.id) }}{% endif %}" class="form">
         <div class="form-group">
             <label for="fecha">Fecha</label>
-            <input 
-                type="date" 
-                id="fecha" 
-                name="fecha" 
-                value="{{ request.form.fecha or hoy }}">
+            <input
+                type="date"
+                id="fecha"
+                name="fecha"
+                value="{{ request.form.fecha or (editando.fecha.isoformat() if editando else hoy) }}">
         </div>
-        
+
         <div class="form-group">
             <label for="comentarios">Comentarios</label>
-            <textarea 
-                id="comentarios" 
-                name="comentarios" 
-                rows="10" 
-                required>{{ request.form.comentarios }}</textarea>
+            <textarea
+                id="comentarios"
+                name="comentarios"
+                rows="10"
+                required>{{ request.form.comentarios or (editando.comentarios if editando else '') }}</textarea>
         </div>
-        
+
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">💾 Guardar seguimiento</button>
+            <button type="submit" class="btn btn-primary">💾 {% if editando %}Guardar cambios{% else %}Guardar seguimiento{% endif %}</button>
+            {% if editando %}
+            <a href="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="btn btn-link">Cancelar</a>
+            {% endif %}
         </div>
     </form>
 </div>
@@ -56,6 +59,14 @@
                 <span class="seguimiento-fecha">
                     {{ s.fecha.strftime('%d/%m/%Y') if s.fecha else 'Sin fecha' }}
                 </span>
+                <div class="seguimiento-actions">
+                    <a href="{{ url_for('editar_seguimiento', id=s.id) }}" class="btn btn-sm btn-secondary btn-icon" title="Editar">✏️</a>
+                    <form method="POST" action="{{ url_for('eliminar_seguimiento', id=s.id) }}"
+                          onsubmit="return confirm('¿Está seguro de eliminar este seguimiento?');"
+                          style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-danger btn-icon" title="Eliminar">🗑️</button>
+                    </form>
+                </div>
             </div>
             <div class="seguimiento-comentarios">
                 <p>{{ s.comentarios }}</p>

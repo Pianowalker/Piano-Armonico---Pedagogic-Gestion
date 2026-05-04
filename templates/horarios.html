@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Horarios - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Horarios</h2>
+        <p class="subtitle">Agenda visual por día (slots cada 15 minutos)</p>
+    </div>
+    <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver a alumnos</a>
+</div>
+
+<div class="card">
+    <div class="dias-selector">
+        {% for d in dias %}
+        <a href="{{ url_for('horarios', day=d) }}"
+           class="btn {% if d == day %}btn-primary{% else %}btn-secondary{% endif %}">
+            {{ d | capitalize }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="data-table data-table-horarios">
+        <thead>
+            <tr>
+                <th style="width: 120px;">Hora</th>
+                <th>Alumnos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in slots %}
+            {% set alumnos = alumnos_por_hora.get(slot, []) %}
+            <tr class="{% if alumnos %}slot-ocupado{% else %}slot-libre{% endif %}">
+                <td><strong>{{ slot }}</strong></td>
+                <td>
+                    {% if alumnos %}
+                        <div class="horario-alumnos">
+                            {% for alumno in alumnos %}
+                                <a class="horario-alumno" href="{{ url_for('seguimiento_alumno', id=alumno.id) }}">
+                                    {{ alumno.nombre_completo }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="horario-libre">Libre</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

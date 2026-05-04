@@ -85,6 +85,24 @@
                 {% endif %}
             </select>
         </div>
+
+        <div class="form-group">
+            <label for="day">Día de cursada (opcional)</label>
+            <select id="day" name="day">
+                <option value="" {% if not alumno or not alumno.day %}selected{% endif %}>Sin asignar</option>
+                <option value="lunes" {% if alumno and alumno.day == 'lunes' %}selected{% endif %}>lunes</option>
+                <option value="martes" {% if alumno and alumno.day == 'martes' %}selected{% endif %}>martes</option>
+                <option value="miércoles" {% if alumno and alumno.day == 'miércoles' %}selected{% endif %}>miércoles</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="time">Hora de cursada (opcional)</label>
+            <input type="time" id="time" name="time" step="900"
+                   value="{{ alumno.time if alumno and alumno.time else '' }}"
+                   placeholder="Ej: 18:00">
+            <small class="form-help">Formato HH:mm. Se recomienda intervalos de 15 minutos.</small>
+        </div>
         
         <div class="form-group" id="carrera-group" style="display: none;">
             <label for="carrera">Carrera</label>

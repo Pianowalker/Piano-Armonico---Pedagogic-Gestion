@@ -22,6 +22,9 @@ class Alumno(db.Model):
     estado_academico = db.Column(db.String(20), nullable=False)  # 'regular', 'condicional', 'oyente', 'libre'
     estado_cursada = db.Column(db.String(20), nullable=False)  # 'activo', 'abandonó'
     carrera = db.Column(db.String(50))  # 'Educación musical', 'Instrumento', 'Dirección coral', 'Composición' (solo para profesorado)
+    # Horario (opcional)
+    day = db.Column(db.String(20), nullable=True)   # lunes, martes, miércoles
+    time = db.Column(db.String(5), nullable=True)   # HH:mm (ej: 18:00)
     comentarios = db.Column(db.Text)
     
     # Relación con trabajos musicales
