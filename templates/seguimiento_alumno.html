@@ -47,6 +47,24 @@
             <span id="dictado-estado" class="form-help dictado-estado" role="status" aria-live="polite"></span>
         </div>
 
+        {% if trabajos %}
+        <div class="form-group">
+            <label>Trabajos abordados en esta clase</label>
+            {% set marcados = request.form.getlist('trabajos') if request.form
+                              else (editando.trabajos | map(attribute='id') | map('string') | list if editando else []) %}
+            <div class="trabajos-check">
+                {% for t in trabajos %}
+                <label class="trabajo-check">
+                    <input type="checkbox" name="trabajos" value="{{ t.id }}"
+                           {% if t.id|string in marcados %}checked{% endif %}>
+                    <span class="trabajo-check-titulo">{{ t.titulo }}</span>
+                    <span class="badge {% if t.estado_estudio == 'resuelto' %}badge-success{% elif t.estado_estudio == 'en proceso' %}badge-warning{% else %}badge-info{% endif %}">{{ t.estado_estudio }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">{% if editando %}Guardar cambios{% else %}Guardar seguimiento{% endif %}</button>
             {% if editando %}
@@ -79,6 +97,13 @@
             <div class="seguimiento-comentarios">
                 <p>{{ s.comentarios }}</p>
             </div>
+            {% if s.trabajos %}
+            <div class="seguimiento-trabajos">
+                {% for t in s.trabajos %}
+                <span class="chip-trabajo">🎵 {{ t.titulo }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

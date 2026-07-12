@@ -148,6 +148,13 @@
                     <strong>Comentarios:</strong> {{ trabajo.comentarios }}
                 </div>
                 {% endif %}
+
+                {% set clases = trabajo.seguimientos|length %}
+                {% if clases %}
+                <div class="trabajo-clases">
+                    📓 Trabajado en {{ clases }} clase{{ 's' if clases != 1 else '' }}
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

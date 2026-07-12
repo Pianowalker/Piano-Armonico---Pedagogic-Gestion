@@ -9,6 +9,18 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
+# Tabla de asociación muchos-a-muchos entre seguimientos y trabajos:
+# una clase puede trabajar varias obras y una obra aparece en varias clases.
+seguimiento_trabajo = db.Table(
+    'seguimiento_trabajo',
+    db.Column('seguimiento_id', db.Integer,
+              db.ForeignKey('seguimientos_clase.id'), primary_key=True),
+    db.Column('trabajo_id', db.Integer,
+              db.ForeignKey('trabajos_musicales.id'), primary_key=True),
+)
+
+
 class Alumno(db.Model):
     """Modelo de Alumno"""
     __tablename__ = 'alumnos'
@@ -71,7 +83,15 @@ class SeguimientoClase(db.Model):
     fecha = db.Column(db.Date, nullable=False, default=date.today)
     comentarios = db.Column(db.Text, nullable=False)
     alumno_id = db.Column(db.Integer, db.ForeignKey('alumnos.id'), nullable=False)
-    
+
+    # Trabajos musicales abordados en esta clase (muchos-a-muchos).
+    trabajos = db.relationship(
+        'TrabajoMusical',
+        secondary=seguimiento_trabajo,
+        backref=db.backref('seguimientos', lazy='select'),
+        lazy='joined',
+    )
+
     def __repr__(self):
         return f'<SeguimientoClase {self.fecha} - Alumno {self.alumno_id}>'
 

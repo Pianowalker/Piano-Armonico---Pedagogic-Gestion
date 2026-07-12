@@ -202,16 +202,31 @@ def perfil_alumno(id):
     )
 
 
+def trabajos_seleccionados(alumno):
+    """Devuelve los trabajos marcados en el form que pertenecen al alumno.
+    Filtrar por alumno evita que se enlace una obra ajena manipulando el form."""
+    ids = request.form.getlist('trabajos')
+    if not ids:
+        return []
+    ids_int = [int(i) for i in ids if i.isdigit()]
+    if not ids_int:
+        return []
+    return TrabajoMusical.query.filter(
+        TrabajoMusical.id.in_(ids_int),
+        TrabajoMusical.alumno_id == alumno.id,
+    ).all()
+
+
 @app.route('/alumnos/<int:id>/seguimiento', methods=['GET', 'POST'])
 def seguimiento_alumno(id):
     """Página de seguimiento clase a clase de un alumno"""
     alumno = Alumno.query.get_or_404(id)
     error = None
-    
+
     if request.method == 'POST':
         comentarios = (request.form.get('comentarios') or '').strip()
         fecha_str = (request.form.get('fecha') or '').strip()
-        
+
         if not comentarios:
             error = 'Los comentarios no pueden estar vacíos.'
         else:
@@ -222,12 +237,13 @@ def seguimiento_alumno(id):
                     fecha_valor = date.today()
             else:
                 fecha_valor = date.today()
-            
+
             seguimiento = SeguimientoClase(
                 fecha=fecha_valor,
                 comentarios=comentarios,
                 alumno_id=alumno.id,
             )
+            seguimiento.trabajos = trabajos_seleccionados(alumno)
             db.session.add(seguimiento)
             db.session.commit()
             flash('Seguimiento guardado correctamente.', 'success')
@@ -240,10 +256,18 @@ def seguimiento_alumno(id):
         .all()
     )
 
+    trabajos = (
+        TrabajoMusical.query
+        .filter_by(alumno_id=alumno.id)
+        .order_by(TrabajoMusical.id.desc())
+        .all()
+    )
+
     return render_template(
         'seguimiento_alumno.html',
         alumno=alumno,
         seguimientos=seguimientos,
+        trabajos=trabajos,
         error=error,
         hoy=date.today().isoformat(),
     )
@@ -356,6 +380,7 @@ def editar_seguimiento(id):
                 except ValueError:
                     pass
             seguimiento.comentarios = comentarios
+            seguimiento.trabajos = trabajos_seleccionados(alumno)
             db.session.commit()
             flash('Seguimiento actualizado correctamente.', 'success')
             return redirect(url_for('seguimiento_alumno', id=alumno.id))
@@ -367,10 +392,18 @@ def editar_seguimiento(id):
         .all()
     )
 
+    trabajos = (
+        TrabajoMusical.query
+        .filter_by(alumno_id=alumno.id)
+        .order_by(TrabajoMusical.id.desc())
+        .all()
+    )
+
     return render_template(
         'seguimiento_alumno.html',
         alumno=alumno,
         seguimientos=seguimientos,
+        trabajos=trabajos,
         error=error,
         hoy=date.today().isoformat(),
         editando=seguimiento,
