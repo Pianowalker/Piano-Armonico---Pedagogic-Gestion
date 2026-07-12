@@ -31,16 +31,24 @@
         </div>
 
         <div class="form-group">
-            <label for="comentarios">Comentarios</label>
+            <div class="label-row">
+                <label for="comentarios">Comentarios</label>
+                <button type="button" id="btn-dictado" class="btn btn-sm btn-secondary btn-dictado" hidden
+                        aria-pressed="false" title="Dictar por voz">
+                    <span class="dictado-icono">🎤</span>
+                    <span class="dictado-texto">Dictar</span>
+                </button>
+            </div>
             <textarea
                 id="comentarios"
                 name="comentarios"
                 rows="10"
                 required>{{ request.form.comentarios or (editando.comentarios if editando else '') }}</textarea>
+            <span id="dictado-estado" class="form-help dictado-estado" role="status" aria-live="polite"></span>
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">💾 {% if editando %}Guardar cambios{% else %}Guardar seguimiento{% endif %}</button>
+            <button type="submit" class="btn btn-primary">{% if editando %}Guardar cambios{% else %}Guardar seguimiento{% endif %}</button>
             {% if editando %}
             <a href="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="btn btn-link">Cancelar</a>
             {% endif %}

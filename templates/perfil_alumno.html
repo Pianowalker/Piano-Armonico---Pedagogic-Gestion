@@ -6,8 +6,8 @@
 <div class="page-header">
     <h2>{{ alumno.nombre_completo }}</h2>
     <div class="header-actions">
-        <a href="{{ url_for('editar_alumno', id=alumno.id) }}" class="btn btn-secondary">✏️ Editar</a>
-        <a href="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="btn btn-secondary">📓 Seguimiento de clases</a>
+        <a href="{{ url_for('editar_alumno', id=alumno.id) }}" class="btn btn-secondary">Editar</a>
+        <a href="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="btn btn-secondary">Seguimiento de clases</a>
         <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver</a>
     </div>
 </div>
@@ -72,7 +72,7 @@
 
 <!-- Requisitos de Examen -->
 <div class="card requisitos-card">
-    <h3>📋 Requisitos de Examen</h3>
+    <h3>Requisitos de examen</h3>
     
     {% if requisitos.cumplidos or requisitos.faltantes %}
     <div class="requisitos-grid">
@@ -111,7 +111,7 @@
 <div class="card">
     <div class="card-header">
         <h3>Trabajos Musicales ({{ trabajos|length }})</h3>
-        <a href="{{ url_for('nuevo_trabajo', id=alumno.id) }}" class="btn btn-primary">➕ Agregar Trabajo</a>
+        <a href="{{ url_for('nuevo_trabajo', id=alumno.id) }}" class="btn btn-primary">+ Agregar trabajo</a>
     </div>
     
     {% if trabajos %}

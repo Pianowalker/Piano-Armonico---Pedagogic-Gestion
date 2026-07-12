@@ -3,6 +3,8 @@ Aplicación web para gestión pedagógica de Piano Armónico
 Backend principal con Flask
 """
 
+import unicodedata
+
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import date, datetime, time as dt_time, timedelta
 from typing import Optional
@@ -88,6 +90,12 @@ def normalizar_horario(form_value: Optional[str]) -> Optional[str]:
     value = form_value.strip()
     return value or None
 
+
+def normalizar_busqueda(value: str) -> str:
+    """Quita acentos y pasa a minúsculas para comparar sin distinguir tildes."""
+    sin_acentos = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    return sin_acentos.casefold()
+
 @app.route('/')
 def index():
     """Página principal - redirige a lista de alumnos"""
@@ -114,13 +122,16 @@ def lista_alumnos():
         query = query.filter(Alumno.estado_academico == estado_academico)
     if estado_cursada:
         query = query.filter(Alumno.estado_cursada == estado_cursada)
-    if busqueda:
-        query = query.filter(
-            (Alumno.nombre.contains(busqueda)) |
-            (Alumno.apellido.contains(busqueda))
-        )
-    
+
     alumnos = query.order_by(Alumno.apellido, Alumno.nombre).all()
+
+    if busqueda:
+        busqueda_normalizada = normalizar_busqueda(busqueda)
+        alumnos = [
+            a for a in alumnos
+            if busqueda_normalizada in normalizar_busqueda(a.nombre_completo)
+        ]
+
     total_alumnos = len(alumnos)
     
     return render_template('lista_alumnos.html', alumnos=alumnos, total_alumnos=total_alumnos)
@@ -346,8 +357,7 @@ def vista_año(ano):
     """Vista de alumnos por año/curso"""
     # El parámetro 'ano' viene de la URL, pero internamente usamos 'año' para la lógica
     año = ano
-    alumnos = Alumno.query.filter_by(año=año).order_by(Alumno.apellido, Alumno.nombre).all()
-    
+
     # Obtener parámetros de filtro adicionales
     tipo = request.args.get('tipo', '')
     estado_academico = request.args.get('estado_academico', '')
@@ -369,16 +379,18 @@ def vista_año(ano):
 
 @app.route('/horarios')
 def horarios():
-    """Agenda visual por día: slots generados dinámicamente."""
-    day = (request.args.get('day') or 'lunes').strip().lower()
-    if day not in DIAS_HORARIOS:
-        day = 'lunes'
+    """Agenda visual semanal: los tres días se muestran juntos.
 
-    slots = generar_slots(day)
+    El parámetro 'day' es opcional y solo se usa para saltar directo
+    (ancla) a la columna de ese día desde los accesos rápidos del menú.
+    """
+    day_destacado = (request.args.get('day') or '').strip().lower()
+    if day_destacado not in DIAS_HORARIOS:
+        day_destacado = None
 
-    alumnos = (
+    alumnos_activos = (
         Alumno.query
-        .filter(Alumno.day == day)
+        .filter(Alumno.day.in_(DIAS_HORARIOS))
         .filter(Alumno.time.isnot(None))
         .filter(Alumno.time != '')
         .filter(Alumno.estado_cursada == 'activo')
@@ -386,20 +398,26 @@ def horarios():
         .all()
     )
 
-    alumnos_por_hora: dict[str, list[Alumno]] = {}
-    for a in alumnos:
-        if not a.time:
-            continue
-        alumnos_por_hora.setdefault(a.time, []).append(a)
+    semana = []
+    for d in DIAS_HORARIOS:
+        alumnos_por_hora: dict[str, list[Alumno]] = {}
+        for a in alumnos_activos:
+            if a.day == d and a.time:
+                alumnos_por_hora.setdefault(a.time, []).append(a)
+        semana.append({
+            'day': d,
+            'slug': normalizar_busqueda(d),  # sin tilde, para usar como ancla #
+            'slots': generar_slots(d),
+            'alumnos_por_hora': alumnos_por_hora,
+        })
 
     return render_template(
         'horarios.html',
-        day=day,
-        dias=DIAS_HORARIOS,
-        slots=slots,
-        alumnos_por_hora=alumnos_por_hora,
+        semana=semana,
+        day_destacado=day_destacado,
     )
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    import os
+    app.run(debug=True, host='127.0.0.1', port=int(os.environ.get('PORT', 5000)))
 

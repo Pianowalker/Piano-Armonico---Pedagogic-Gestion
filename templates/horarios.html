@@ -6,52 +6,49 @@
 <div class="page-header">
     <div>
         <h2>Horarios</h2>
-        <p class="subtitle">Agenda visual por día (slots cada 15 minutos)</p>
+        <p class="subtitle">Agenda semanal (slots cada 15 minutos)</p>
     </div>
     <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver a alumnos</a>
 </div>
 
-<div class="card">
-    <div class="dias-selector">
-        {% for d in dias %}
-        <a href="{{ url_for('horarios', day=d) }}"
-           class="btn {% if d == day %}btn-primary{% else %}btn-secondary{% endif %}">
-            {{ d | capitalize }}
-        </a>
-        {% endfor %}
+<div class="semana-horarios">
+    {% for dia in semana %}
+    <div id="dia-{{ dia.slug }}" class="dia-columna {% if dia.day == day_destacado %}dia-destacado{% endif %}">
+        <div class="dia-columna-header">
+            <h3>{{ dia.day | capitalize }}</h3>
+        </div>
+        <div class="table-container">
+            <table class="data-table data-table-horarios">
+                <thead>
+                    <tr>
+                        <th style="width: 90px;">Hora</th>
+                        <th>Alumnos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in dia.slots %}
+                    {% set alumnos = dia.alumnos_por_hora.get(slot, []) %}
+                    <tr class="{% if alumnos %}slot-ocupado{% else %}slot-libre{% endif %}">
+                        <td><strong>{{ slot }}</strong></td>
+                        <td>
+                            {% if alumnos %}
+                                <div class="horario-alumnos">
+                                    {% for alumno in alumnos %}
+                                        <a class="horario-alumno" href="{{ url_for('seguimiento_alumno', id=alumno.id) }}">
+                                            {{ alumno.nombre_completo }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="horario-libre">Libre</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-
-<div class="table-container">
-    <table class="data-table data-table-horarios">
-        <thead>
-            <tr>
-                <th style="width: 120px;">Hora</th>
-                <th>Alumnos</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for slot in slots %}
-            {% set alumnos = alumnos_por_hora.get(slot, []) %}
-            <tr class="{% if alumnos %}slot-ocupado{% else %}slot-libre{% endif %}">
-                <td><strong>{{ slot }}</strong></td>
-                <td>
-                    {% if alumnos %}
-                        <div class="horario-alumnos">
-                            {% for alumno in alumnos %}
-                                <a class="horario-alumno" href="{{ url_for('seguimiento_alumno', id=alumno.id) }}">
-                                    {{ alumno.nombre_completo }}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <span class="horario-libre">Libre</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% endfor %}
 </div>
 {% endblock %}
-

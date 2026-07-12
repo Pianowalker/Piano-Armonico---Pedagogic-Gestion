@@ -1,252 +1,472 @@
-/* Estilos generales */
+/* ============================================================
+   Piano Armónico — Sistema de diseño
+   ============================================================ */
+
+:root {
+    /* Tipografía */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+
+    /* Paleta */
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface-2: #faf9f6;
+    --ink: #23263b;
+    --ink-soft: #4a4e63;
+    --muted: #797d8f;
+    --border: #e7e5dd;
+    --border-strong: #d9d6cb;
+
+    --primary: #4f46b8;
+    --primary-dark: #40389c;
+    --primary-soft: #edebfb;
+    --primary-tint: #f5f4fd;
+
+    --gold: #b98a2f;
+    --gold-soft: #f7edd8;
+
+    --success: #1c7a3d;
+    --success-soft: #e3f3e8;
+    --warning: #8a6413;
+    --warning-soft: #fdf3d8;
+    --danger: #b3261e;
+    --danger-soft: #fdeceb;
+    --info: #0f6c8c;
+    --info-soft: #e3f2f8;
+
+    /* Sombras */
+    --shadow-sm: 0 1px 2px rgba(35, 38, 59, 0.06);
+    --shadow-md: 0 1px 2px rgba(35, 38, 59, 0.05), 0 8px 24px -12px rgba(35, 38, 59, 0.18);
+    --shadow-lg: 0 4px 12px rgba(35, 38, 59, 0.08), 0 16px 40px -16px rgba(35, 38, 59, 0.22);
+
+    /* Radios */
+    --radius: 14px;
+    --radius-sm: 9px;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.6;
-    color: #333;
-    background-color: #f5f5f5;
+    color: var(--ink);
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79, 70, 184, 0.06), transparent);
+    background-repeat: no-repeat;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 24px;
 }
 
-/* Header */
-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+::selection {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.site-header {
+    background: linear-gradient(120deg, #232349 0%, #35295e 55%, #45316b 100%);
     color: white;
-    padding: 1.5rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(24, 22, 51, 0.28);
 }
 
-header .container {
+.site-header::after {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, #e3c37a 50%, var(--gold) 70%, transparent);
+    opacity: 0.85;
+}
+
+.header-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+    gap: 1rem;
 }
 
-header h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-nav a {
-    color: white;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
     text-decoration: none;
-    margin-left: 1.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    color: white;
 }
 
-nav a:hover {
-    background-color: rgba(255,255,255,0.2);
+.brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: 1.35rem;
+    color: #e9d9ac;
+    flex-shrink: 0;
 }
 
-/* Main content */
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.brand-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.brand-subtitle {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 500;
+}
+
+.site-nav {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.site-nav a {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    padding: 0.5rem 1.1rem;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.site-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.site-nav a.active {
+    background-color: rgba(255, 255, 255, 0.14);
+    color: white;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* Accesos rápidos por día: solo tienen sentido en móvil, donde las
+   columnas de la agenda se apilan y el salto scrollea al día. */
+.site-nav-divider,
+.site-nav-dia {
+    display: none;
+}
+
+.site-nav-dia {
+    font-size: 0.82rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* ============================================================
+   Main / encabezados de página
+   ============================================================ */
 main {
-    min-height: calc(100vh - 200px);
-    padding: 2rem 0;
+    min-height: calc(100vh - 220px);
+    padding: 2.25rem 0 3rem;
 }
 
-/* Page header */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
 }
 
 .page-header h2 {
-    font-size: 2rem;
-    color: #333;
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
 .header-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .header-info {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
+    flex-wrap: wrap;
 }
 
 .recuento-alumnos {
-    font-size: 1rem;
-    color: #666;
+    font-size: 0.9rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
 }
 
 .recuento-alumnos strong {
-    color: #667eea;
-    font-weight: 600;
+    color: var(--primary);
+    font-weight: 700;
 }
 
 .subtitle {
-    color: #666;
-    margin-top: 0.5rem;
+    color: var(--muted);
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
 }
 
-/* Cards */
+/* ============================================================
+   Cards
+   ============================================================ */
 .card {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.6rem 1.75rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
 }
 
-.card h3 {
-    margin-bottom: 1rem;
-    color: #667eea;
-    font-size: 1.3rem;
+.card > h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 1.2rem;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
 }
 
 .card-header h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 1.2rem;
     margin-bottom: 0;
 }
 
-/* Buttons */
+/* ============================================================
+   Botones
+   ============================================================ */
 .btn {
-    display: inline-block;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.15rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
     text-decoration: none;
-    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
     cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+
+.btn:active {
+    transform: translateY(1px);
 }
 
 .btn-primary {
-    background-color: #667eea;
+    background: linear-gradient(180deg, #5a51c9, var(--primary));
     color: white;
+    box-shadow: 0 1px 2px rgba(64, 56, 156, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn-primary:hover {
-    background-color: #5568d3;
+    background: linear-gradient(180deg, #524ac0, var(--primary-dark));
+    box-shadow: 0 3px 10px rgba(64, 56, 156, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn-secondary {
-    background-color: #6c757d;
-    color: white;
+    background-color: var(--surface);
+    color: var(--ink-soft);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    border-color: var(--primary);
+    color: var(--primary-dark);
+    background-color: var(--primary-tint);
 }
 
 .btn-danger {
-    background-color: #dc3545;
-    color: white;
+    background-color: var(--danger-soft);
+    color: var(--danger);
 }
 
 .btn-danger:hover {
-    background-color: #c82333;
+    background-color: var(--danger);
+    color: white;
 }
 
 .btn-success {
-    background-color: #28a745;
+    background-color: var(--success);
     color: white;
 }
 
 .btn-success:hover {
-    background-color: #218838;
+    background-color: #166332;
 }
 
 .btn-link {
     background: none;
-    color: #667eea;
-    text-decoration: underline;
-    padding: 0.6rem 0;
-}
-
-.btn-link:hover {
-    color: #5568d3;
-}
-
-.btn-sm {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-}
-
-/* Badges */
-.badge {
-    display: inline-block;
-    padding: 0.25rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.85rem;
+    color: var(--muted);
+    padding: 0.55rem 0.5rem;
     font-weight: 500;
 }
 
+.btn-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.82rem;
+    border-radius: 8px;
+}
+
+.btn-icon {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1;
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
+    padding: 0.22rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.65;
+    flex-shrink: 0;
+}
+
 .badge-primary {
-    background-color: #667eea;
-    color: white;
+    background-color: var(--primary-soft);
+    color: var(--primary-dark);
 }
 
 .badge-secondary {
-    background-color: #6c757d;
-    color: white;
+    background-color: #eef0f3;
+    color: var(--ink-soft);
 }
 
-.badge-info {
-    background-color: #17a2b8;
-    color: white;
-}
-
-.badge-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.badge-warning {
-    background-color: #ffc107;
-    color: #333;
-}
-
-.badge-regular {
-    background-color: #28a745;
-    color: white;
-}
-
-.badge-condicional {
-    background-color: #ffc107;
-    color: #333;
-}
-
+.badge-info,
 .badge-oyente {
-    background-color: #17a2b8;
-    color: white;
+    background-color: var(--info-soft);
+    color: var(--info);
+}
+
+.badge-success,
+.badge-regular {
+    background-color: var(--success-soft);
+    color: var(--success);
+}
+
+.badge-warning,
+.badge-condicional {
+    background-color: var(--warning-soft);
+    color: var(--warning);
 }
 
 .badge-libre {
-    background-color: #6c757d;
-    color: white;
+    background-color: #eef0f3;
+    color: var(--ink-soft);
 }
 
-/* Forms */
+/* ============================================================
+   Alertas
+   ============================================================ */
+.alert {
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.25rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: var(--danger-soft);
+    color: var(--danger);
+    border: 1px solid #f5c6c3;
+}
+
+/* ============================================================
+   Formularios y filtros
+   ============================================================ */
 .filtros {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.4rem 1.75rem;
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow-md);
 }
 
 .filtros-form {
@@ -257,7 +477,7 @@ main {
 
 .filtros-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     gap: 1rem;
 }
 
@@ -267,21 +487,24 @@ main {
 }
 
 .filtro-item label {
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #555;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .filtros-actions {
     display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    gap: 0.75rem;
+    align-items: center;
 }
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.3rem;
 }
 
 .form-group {
@@ -290,49 +513,137 @@ main {
 }
 
 .form-group label {
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #555;
+    margin-bottom: 0.45rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-    padding: 0.7rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-family: inherit;
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+    padding: 0.62rem 0.85rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 0.93rem;
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background-color: var(--surface);
+    transition: border-color 0.18s, box-shadow 0.18s;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23797d8f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M1.5 1.75 6 6.25l4.5-4.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    padding-right: 2.4rem;
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.55;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: #c4c0b1;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3.5px rgba(79, 70, 184, 0.13);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #a9acb9;
 }
 
 .form-help {
     display: block;
-    margin-top: 0.25rem;
-    font-size: 0.85rem;
-    color: #666;
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+/* Dictado por voz */
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.45rem;
+}
+
+.label-row label {
+    margin-bottom: 0;
+}
+
+.btn-dictado {
+    flex-shrink: 0;
+}
+
+.btn-dictado.grabando {
+    background-color: var(--danger);
+    border-color: var(--danger);
+    color: white;
+    animation: dictado-pulso 1.4s ease-in-out infinite;
+}
+
+.btn-dictado.grabando:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-dictado .dictado-icono {
+    line-height: 1;
+}
+
+@keyframes dictado-pulso {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(179, 38, 30, 0.45); }
+    50% { box-shadow: 0 0 0 6px rgba(179, 38, 30, 0); }
+}
+
+.dictado-estado:empty {
+    display: none;
+}
+
+.dictado-estado {
+    color: var(--primary-dark);
+    font-weight: 500;
 }
 
 .form-actions {
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
 }
 
-/* Tables */
+/* ============================================================
+   Tablas
+   ============================================================ */
 .table-container {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
     overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .data-table {
@@ -341,75 +652,149 @@ main {
 }
 
 .data-table thead {
-    background-color: #f8f9fa;
+    background-color: var(--surface-2);
 }
 
 .data-table th {
-    padding: 1rem;
+    padding: 0.8rem 1.25rem;
     text-align: left;
     font-weight: 600;
-    color: #555;
-    border-bottom: 2px solid #dee2e6;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
 }
 
 .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #dee2e6;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.93rem;
+    vertical-align: middle;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.15s;
 }
 
 .data-table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--primary-tint);
 }
 
 .data-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.dias-selector {
-    display: flex;
-    gap: 0.75rem;
+/* ============================================================
+   Horarios
+   ============================================================ */
+.semana-horarios {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
 }
 
-/* Horarios */
+.dia-columna-header {
+    margin-bottom: 0.75rem;
+}
+
+.dia-columna-header h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 1.1rem;
+}
+
+.dia-columna {
+    border-radius: var(--radius);
+    scroll-margin-top: 90px;
+    transition: box-shadow 0.4s ease;
+}
+
+.dia-destacado {
+    box-shadow: 0 0 0 2px var(--primary);
+    border-radius: var(--radius);
+}
+
+.dia-destacado .dia-columna-header h3 {
+    color: var(--primary-dark);
+}
+
 .data-table-horarios td {
     vertical-align: top;
 }
 
 .slot-libre td {
-    background-color: #ffffff;
+    background-color: var(--surface);
+}
+
+.slot-libre:hover {
+    background-color: var(--surface) !important;
 }
 
 .slot-ocupado td {
-    background-color: #eef2ff;
+    background-color: var(--primary-tint);
+}
+
+.slot-ocupado td:first-child {
+    box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.slot-ocupado strong {
+    color: var(--primary-dark);
+}
+
+.slot-libre strong {
+    color: var(--muted);
+    font-weight: 500;
 }
 
 .horario-alumnos {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    flex-wrap: wrap;
+    gap: 0.4rem;
 }
 
 .horario-alumno {
-    color: #333;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--primary-dark);
     text-decoration: none;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    border: 1px solid rgba(102, 126, 234, 0.25);
-    background: rgba(102, 126, 234, 0.08);
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(79, 70, 184, 0.25);
+    background: var(--surface);
+    font-weight: 500;
+    font-size: 0.88rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.18s;
+}
+
+.horario-alumno::before {
+    content: '♪';
+    font-size: 0.8rem;
+    opacity: 0.6;
 }
 
 .horario-alumno:hover {
-    background: rgba(102, 126, 234, 0.15);
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(64, 56, 156, 0.3);
 }
 
 .horario-libre {
-    color: #666;
+    color: #b4b7c2;
     font-style: italic;
+    font-size: 0.88rem;
 }
 
 .acciones-lista {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.45rem;
     align-items: center;
 }
 
@@ -417,87 +802,104 @@ main {
     margin: 0;
 }
 
-/* Datos del alumno */
+/* ============================================================
+   Perfil del alumno
+   ============================================================ */
 .datos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.1rem 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .dato-item {
     display: flex;
     flex-direction: column;
+    gap: 0.3rem;
 }
 
 .dato-item label {
     font-weight: 600;
-    color: #666;
-    margin-bottom: 0.25rem;
-    font-size: 0.9rem;
+    color: var(--muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
 }
 
 .dato-item span {
-    color: #333;
+    color: var(--ink);
+    font-size: 0.95rem;
+}
+
+.dato-item .badge {
+    align-self: flex-start;
 }
 
 .comentarios {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
+    margin-top: 1.25rem;
+    padding: 1rem 1.2rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
 }
 
 .comentarios label {
     font-weight: 600;
-    color: #666;
-    margin-bottom: 0.5rem;
+    color: var(--muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.4rem;
     display: block;
 }
 
 .comentarios p {
-    color: #555;
+    color: var(--ink-soft);
     white-space: pre-wrap;
+    font-size: 0.93rem;
 }
 
-/* Requisitos de examen */
+/* ============================================================
+   Requisitos de examen
+   ============================================================ */
 .requisitos-card {
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--gold);
 }
 
 .requisitos-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-top: 1rem;
+    gap: 1.25rem;
 }
 
 .requisitos-cumplidos,
 .requisitos-faltantes {
-    padding: 1rem;
-    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    border-radius: var(--radius-sm);
 }
 
 .requisitos-cumplidos {
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
+    background-color: var(--success-soft);
+    border: 1px solid #c4e4cf;
 }
 
 .requisitos-faltantes {
-    background-color: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background-color: var(--warning-soft);
+    border: 1px solid #efdfae;
 }
 
 .requisitos-title {
-    margin-bottom: 0.75rem;
-    font-size: 1.1rem;
+    margin-bottom: 0.65rem;
+    font-size: 1rem;
+    font-weight: 700;
 }
 
 .requisitos-title.cumplido {
-    color: #155724;
+    color: var(--success);
 }
 
 .requisitos-title.faltante {
-    color: #856404;
+    color: var(--warning);
 }
 
 .requisitos-cumplidos ul,
@@ -508,8 +910,17 @@ main {
 
 .requisitos-cumplidos li,
 .requisitos-faltantes li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 0.45rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    font-size: 0.92rem;
+}
+
+.requisitos-cumplidos li {
+    color: #185231;
+}
+
+.requisitos-faltantes li {
+    color: #6e5316;
 }
 
 .requisitos-cumplidos li:last-child,
@@ -518,75 +929,95 @@ main {
 }
 
 .empty {
-    color: #666;
+    color: var(--muted);
     font-style: italic;
+    font-size: 0.92rem;
 }
 
 .empty.success {
-    color: #155724;
-    font-weight: 500;
+    color: var(--success);
+    font-weight: 600;
     font-style: normal;
 }
 
-/* Trabajos musicales */
+/* ============================================================
+   Trabajos musicales
+   ============================================================ */
 .trabajos-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.9rem;
 }
 
 .trabajo-item {
-    padding: 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    background-color: #f8f9fa;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface-2);
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.trabajo-item:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
 }
 
 .trabajo-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
 }
 
 .trabajo-header h4 {
-    color: #333;
-    font-size: 1.1rem;
+    font-family: var(--font-display);
+    color: var(--ink);
+    font-size: 1.05rem;
+    font-weight: 600;
 }
 
 .trabajo-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.45rem;
 }
 
 .trabajo-badges {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 0.45rem;
+    margin-bottom: 0.4rem;
 }
 
 .trabajo-comentarios {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #dee2e6;
-    color: #555;
-    font-size: 0.9rem;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--border-strong);
+    color: var(--ink-soft);
+    font-size: 0.88rem;
 }
 
-/* Seguimiento de clases */
+/* ============================================================
+   Seguimiento de clases
+   ============================================================ */
 .seguimientos-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.9rem;
 }
 
 .seguimiento-item {
-    padding: 1rem 1.25rem;
-    border-radius: 6px;
-    background-color: #fdfdfd;
-    border: 1px solid #e2e6ea;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    padding: 1rem 1.3rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    transition: box-shadow 0.18s;
+}
+
+.seguimiento-item:hover {
+    box-shadow: var(--shadow-sm);
 }
 
 .seguimiento-header {
@@ -594,8 +1025,8 @@ main {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-    border-bottom: 1px dashed #ced4da;
-    padding-bottom: 0.4rem;
+    border-bottom: 1px dashed var(--border-strong);
+    padding-bottom: 0.5rem;
 }
 
 .seguimiento-actions {
@@ -603,148 +1034,193 @@ main {
     gap: 0.35rem;
 }
 
-.btn-icon {
-    padding: 0.25rem 0.45rem;
-    font-size: 0.8rem;
-    line-height: 1;
-}
-
 .seguimiento-fecha {
-    font-weight: 600;
-    color: #667eea;
-    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
 }
 
 .seguimiento-comentarios p {
     margin-top: 0.25rem;
     white-space: pre-wrap;
-    color: #444;
-    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-size: 0.93rem;
 }
 
-/* Empty state */
+/* ============================================================
+   Estados vacíos
+   ============================================================ */
 .empty-state {
     text-align: center;
-    padding: 3rem 1rem;
-    color: #666;
+    padding: 3rem 1.5rem;
+    color: var(--muted);
+}
+
+.empty-state::before {
+    content: '♪';
+    display: block;
+    font-size: 2.2rem;
+    color: var(--border-strong);
+    margin-bottom: 0.5rem;
+    line-height: 1;
 }
 
 .empty-state p {
     margin-bottom: 1rem;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
-/* Accesos rápidos */
+/* ============================================================
+   Accesos rápidos por año
+   ============================================================ */
 .accesos-rapidos {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 1.75rem;
+    padding: 1.4rem 1.75rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
 }
 
 .accesos-rapidos h3 {
-    margin-bottom: 1rem;
-    color: #667eea;
+    font-family: var(--font-display);
+    margin-bottom: 0.9rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    font-weight: 600;
 }
 
 .año-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.6rem;
 }
 
 .año-links a {
-    padding: 0.5rem 1rem;
-    background-color: #f8f9fa;
-    color: #667eea;
+    padding: 0.42rem 1rem;
+    background-color: var(--surface-2);
+    color: var(--ink-soft);
     text-decoration: none;
-    border-radius: 6px;
-    border: 1px solid #dee2e6;
-    transition: all 0.2s;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.18s;
 }
 
 .año-links a:hover {
-    background-color: #667eea;
+    background-color: var(--primary);
     color: white;
-    border-color: #667eea;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(64, 56, 156, 0.3);
 }
 
-/* Resumen año */
+/* ============================================================
+   Resumen año
+   ============================================================ */
 .resumen-año {
-    background: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
+    background: var(--surface);
+    padding: 0.9rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
 }
 
 .resumen-año p {
-    font-size: 1.1rem;
-    color: #555;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
 }
 
-/* Footer */
+.resumen-año strong {
+    color: var(--primary-dark);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
 footer {
-    background-color: #333;
-    color: white;
-    padding: 1.5rem 0;
-    margin-top: 3rem;
+    padding: 1.75rem 0 2.25rem;
     text-align: center;
 }
 
 footer p {
-    font-size: 0.9rem;
-    color: #ccc;
+    font-size: 0.82rem;
+    color: var(--muted);
 }
 
-/* Responsive */
+footer .footer-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+footer .footer-note::before,
+footer .footer-note::after {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--border-strong);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
 @media (max-width: 768px) {
-    header .container {
+    .header-inner {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
     }
-    
-    nav {
-        display: flex;
-        gap: 0.5rem;
+
+    .site-nav {
+        width: 100%;
+        justify-content: center;
     }
-    
-    nav a {
-        margin-left: 0;
-    }
-    
+
     .page-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
     }
-    
-    .filtros-grid {
+
+    .page-header h2 {
+        font-size: 1.55rem;
+    }
+
+    .filtros-grid,
+    .requisitos-grid,
+    .datos-grid,
+    .semana-horarios {
         grid-template-columns: 1fr;
     }
-    
-    .requisitos-grid {
-        grid-template-columns: 1fr;
+
+    .site-nav-divider {
+        display: block;
     }
-    
-    .datos-grid {
-        grid-template-columns: 1fr;
+
+    .site-nav-dia {
+        display: inline-flex;
     }
-    
+
+    .card,
+    .filtros,
+    .accesos-rapidos {
+        padding: 1.2rem 1.25rem;
+    }
+
     .trabajo-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
     }
-    
+
     .data-table {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
     }
-    
+
     .data-table th,
     .data-table td {
-        padding: 0.75rem 0.5rem;
+        padding: 0.65rem 0.75rem;
     }
 }
-

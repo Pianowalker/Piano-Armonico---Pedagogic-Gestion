@@ -65,6 +65,122 @@ document.addEventListener('DOMContentLoaded', function() {
         añoSelect.addEventListener('change', toggleCarrera);
     }
     
+    // En la agenda semanal, al llegar con un día resaltado (?day=...),
+    // scrollear hasta esa columna. Útil en móvil, donde los días se apilan.
+    // Se hace por JS (y no con ancla #) para evitar que la carga de fuentes
+    // desplace el layout después del salto nativo del navegador.
+    const diaDestacado = document.querySelector('.dia-destacado');
+    if (diaDestacado) {
+        window.addEventListener('load', function() {
+            diaDestacado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    // Dictado por voz para el campo de comentarios del seguimiento.
+    // Usa la Web Speech API nativa del navegador (requiere HTTPS en producción).
+    // El botón solo se muestra si el navegador soporta reconocimiento de voz.
+    const btnDictado = document.getElementById('btn-dictado');
+    const textareaComentarios = document.getElementById('comentarios');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (btnDictado && textareaComentarios && SpeechRecognition) {
+        const estado = document.getElementById('dictado-estado');
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-AR';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        let escuchando = false;
+        let baseText = '';          // texto ya confirmado en el textarea al iniciar/entre frases
+        let interimActual = '';     // transcripción provisional en curso
+
+        btnDictado.hidden = false;
+
+        function setEstado(mensaje) {
+            if (estado) estado.textContent = mensaje;
+        }
+
+        function separador(texto) {
+            // Agrega un espacio si el texto previo no termina en espacio/salto de línea.
+            if (!texto) return '';
+            return /\s$/.test(texto) ? '' : ' ';
+        }
+
+        function iniciar() {
+            baseText = textareaComentarios.value;
+            interimActual = '';
+            try {
+                recognition.start();
+            } catch (e) {
+                // start() lanza si ya está activo; lo ignoramos.
+            }
+        }
+
+        function detener() {
+            recognition.stop();
+        }
+
+        btnDictado.addEventListener('click', function() {
+            if (escuchando) {
+                detener();
+            } else {
+                iniciar();
+            }
+        });
+
+        recognition.addEventListener('start', function() {
+            escuchando = true;
+            btnDictado.classList.add('grabando');
+            btnDictado.setAttribute('aria-pressed', 'true');
+            btnDictado.querySelector('.dictado-texto').textContent = 'Detener';
+            setEstado('Escuchando… hablá con normalidad.');
+        });
+
+        recognition.addEventListener('result', function(event) {
+            let finalNuevo = '';
+            interimActual = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalNuevo += transcript;
+                } else {
+                    interimActual += transcript;
+                }
+            }
+            if (finalNuevo) {
+                baseText += separador(baseText) + finalNuevo.trim();
+            }
+            const provisional = interimActual
+                ? separador(baseText) + interimActual.trim()
+                : '';
+            textareaComentarios.value = baseText + provisional;
+        });
+
+        recognition.addEventListener('error', function(event) {
+            if (event.error === 'no-speech') {
+                setEstado('No se detectó voz. Probá de nuevo.');
+            } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                setEstado('Permiso de micrófono denegado. Habilitalo en el navegador.');
+            } else if (event.error === 'aborted') {
+                setEstado('');
+            } else {
+                setEstado('Error de dictado: ' + event.error);
+            }
+        });
+
+        recognition.addEventListener('end', function() {
+            escuchando = false;
+            btnDictado.classList.remove('grabando');
+            btnDictado.setAttribute('aria-pressed', 'false');
+            btnDictado.querySelector('.dictado-texto').textContent = 'Dictar';
+            // Consolidar cualquier texto provisional que haya quedado.
+            textareaComentarios.value = baseText;
+            if (estado && estado.textContent.startsWith('Escuchando')) {
+                setEstado('');
+            }
+        });
+    }
+
     // Mejora de UX: auto-submit en algunos filtros (opcional)
     // Puedes descomentar si quieres que los filtros se apliquen automáticamente
     /*
