@@ -441,6 +441,46 @@ main {
 }
 
 /* ============================================================
+   Barra de progreso de requisitos (lista de alumnos)
+   ============================================================ */
+.progreso-cell {
+    min-width: 110px;
+}
+
+.progreso {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progreso-barra {
+    flex: 1;
+    height: 8px;
+    min-width: 55px;
+    background-color: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progreso-relleno {
+    height: 100%;
+    background-color: var(--warning);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.progreso-relleno.completo {
+    background-color: var(--success);
+}
+
+.progreso-texto {
+    font-size: 0.78rem;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
    Alertas
    ============================================================ */
 .alert {
@@ -1018,6 +1058,22 @@ textarea::placeholder {
 .trabajo-item:hover {
     border-color: var(--border-strong);
     box-shadow: var(--shadow-sm);
+}
+
+/* Color de fondo según el estado de estudio, para distinguir de un vistazo */
+.trabajo-resuelto {
+    background-color: var(--success-soft);
+    border-left: 4px solid var(--success);
+}
+
+.trabajo-en-proceso {
+    background-color: var(--warning-soft);
+    border-left: 4px solid var(--warning);
+}
+
+.trabajo-iniciado {
+    background-color: var(--info-soft);
+    border-left: 4px solid var(--info);
 }
 
 .trabajo-header {

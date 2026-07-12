@@ -133,8 +133,33 @@ def lista_alumnos():
         ]
 
     total_alumnos = len(alumnos)
-    
-    return render_template('lista_alumnos.html', alumnos=alumnos, total_alumnos=total_alumnos)
+
+    # Progreso de requisitos por alumno (para la barra en la lista).
+    # Cargamos todos los trabajos en una sola query y los agrupamos, para
+    # evitar una consulta por alumno.
+    progreso = {}
+    if alumnos:
+        ids = [a.id for a in alumnos]
+        trabajos_por_alumno = {}
+        for t in TrabajoMusical.query.filter(TrabajoMusical.alumno_id.in_(ids)).all():
+            trabajos_por_alumno.setdefault(t.alumno_id, []).append(t)
+
+        for a in alumnos:
+            req = validar_requisitos_examen(a, trabajos_por_alumno.get(a.id, []))
+            cumplidos = len(req['cumplidos'])
+            total = cumplidos + len(req['faltantes'])
+            progreso[a.id] = {
+                'cumplidos': cumplidos,
+                'total': total,
+                'porcentaje': round(cumplidos / total * 100) if total else None,
+            }
+
+    return render_template(
+        'lista_alumnos.html',
+        alumnos=alumnos,
+        total_alumnos=total_alumnos,
+        progreso=progreso,
+    )
 
 @app.route('/alumnos/nuevo', methods=['GET', 'POST'])
 def nuevo_alumno():

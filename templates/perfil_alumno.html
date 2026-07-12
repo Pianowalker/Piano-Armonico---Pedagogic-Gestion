@@ -117,7 +117,7 @@
     {% if trabajos %}
     <div class="trabajos-list">
         {% for trabajo in trabajos %}
-        <div class="trabajo-item">
+        <div class="trabajo-item trabajo-{{ trabajo.estado_estudio | replace(' ', '-') }}">
             <div class="trabajo-header">
                 <h4>{{ trabajo.titulo }}</h4>
                 <div class="trabajo-actions">

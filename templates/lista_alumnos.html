@@ -87,6 +87,7 @@
                 <th>Tipo</th>
                 <th>Estado Académico</th>
                 <th>Estado Cursada</th>
+                <th>Progreso</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -111,6 +112,20 @@
                     <span class="badge {% if alumno.estado_cursada == 'activo' %}badge-success{% else %}badge-warning{% endif %}">
                         {{ alumno.estado_cursada }}
                     </span>
+                </td>
+                <td class="progreso-cell">
+                    {% set p = progreso.get(alumno.id) %}
+                    {% if p and p.total %}
+                    <div class="progreso" title="{{ p.cumplidos }} de {{ p.total }} requisitos cumplidos">
+                        <div class="progreso-barra">
+                            <div class="progreso-relleno {% if p.porcentaje == 100 %}completo{% endif %}"
+                                 style="width: {{ p.porcentaje }}%;"></div>
+                        </div>
+                        <span class="progreso-texto">{{ p.cumplidos }}/{{ p.total }}</span>
+                    </div>
+                    {% else %}
+                    <span class="progreso-texto">—</span>
+                    {% endif %}
                 </td>
                 <td>
                     <div class="acciones-lista">
