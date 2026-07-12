@@ -76,6 +76,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Auto-ocultar los mensajes flash de éxito después de unos segundos.
+    // Los de error/otros se dejan hasta que el usuario los cierre a mano.
+    document.querySelectorAll('.flash-success').forEach(function(flash) {
+        setTimeout(function() {
+            flash.classList.add('flash-saliente');
+            flash.addEventListener('transitionend', function() {
+                flash.remove();
+            });
+        }, 4000);
+    });
+
     // Dictado por voz para el campo de comentarios del seguimiento.
     // Usa la Web Speech API nativa del navegador (requiere HTTPS en producción).
     // El botón solo se muestra si el navegador soporta reconocimiento de voz.

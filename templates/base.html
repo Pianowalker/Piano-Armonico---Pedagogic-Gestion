@@ -32,6 +32,18 @@
     </header>
 
     <main class="container">
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+            <div class="flash-container">
+                {% for categoria, texto in mensajes %}
+                <div class="flash flash-{{ categoria }}" role="status">
+                    <span class="flash-texto">{{ texto }}</span>
+                    <button type="button" class="flash-cerrar" aria-label="Cerrar" onclick="this.parentElement.remove()">×</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 

@@ -5,7 +5,7 @@ Backend principal con Flask
 
 import unicodedata
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import date, datetime, time as dt_time, timedelta
 from typing import Optional
 from models import db, Alumno, TrabajoMusical, SeguimientoClase
@@ -155,8 +155,9 @@ def nuevo_alumno():
         )
         db.session.add(alumno)
         db.session.commit()
+        flash(f'Alumno {alumno.nombre_completo} creado correctamente.', 'success')
         return redirect(url_for('perfil_alumno', id=alumno.id))
-    
+
     return render_template('form_alumno.html')
 
 @app.route('/alumnos/<int:id>')
@@ -204,8 +205,9 @@ def seguimiento_alumno(id):
             )
             db.session.add(seguimiento)
             db.session.commit()
+            flash('Seguimiento guardado correctamente.', 'success')
             return redirect(url_for('seguimiento_alumno', id=alumno.id))
-    
+
     seguimientos = (
         SeguimientoClase.query
         .filter_by(alumno_id=alumno.id)
@@ -238,18 +240,21 @@ def editar_alumno(id):
         alumno.day = normalizar_horario(request.form.get('day'))
         alumno.time = normalizar_horario(request.form.get('time'))
         alumno.comentarios = request.form.get('comentarios', '')
-        
+
         db.session.commit()
+        flash('Cambios guardados correctamente.', 'success')
         return redirect(url_for('perfil_alumno', id=alumno.id))
-    
+
     return render_template('form_alumno.html', alumno=alumno)
 
 @app.route('/alumnos/<int:id>/eliminar', methods=['POST'])
 def eliminar_alumno(id):
     """Eliminar alumno"""
     alumno = Alumno.query.get_or_404(id)
+    nombre = alumno.nombre_completo
     db.session.delete(alumno)
     db.session.commit()
+    flash(f'Alumno {nombre} eliminado.', 'success')
     return redirect(url_for('lista_alumnos'))
 
 @app.route('/alumnos/<int:id>/trabajo/nuevo', methods=['GET', 'POST'])
@@ -270,8 +275,9 @@ def nuevo_trabajo(id):
         )
         db.session.add(trabajo)
         db.session.commit()
+        flash(f'Trabajo «{trabajo.titulo}» agregado.', 'success')
         return redirect(url_for('perfil_alumno', id=id))
-    
+
     return render_template('form_trabajo.html', alumno=alumno)
 
 @app.route('/trabajos/<int:id>/editar', methods=['GET', 'POST'])
@@ -287,10 +293,11 @@ def editar_trabajo(id):
         trabajo.autoría_arreglo = request.form.get('autoría_arreglo', 'propio')
         trabajo.estado_estudio = request.form['estado_estudio']
         trabajo.comentarios = request.form.get('comentarios', '')
-        
+
         db.session.commit()
+        flash('Trabajo actualizado correctamente.', 'success')
         return redirect(url_for('perfil_alumno', id=trabajo.alumno_id))
-    
+
     return render_template('form_trabajo.html', trabajo=trabajo, alumno=trabajo.alumno)
 
 @app.route('/trabajos/<int:id>/eliminar', methods=['POST'])
@@ -298,8 +305,10 @@ def eliminar_trabajo(id):
     """Eliminar trabajo musical"""
     trabajo = TrabajoMusical.query.get_or_404(id)
     alumno_id = trabajo.alumno_id
+    titulo = trabajo.titulo
     db.session.delete(trabajo)
     db.session.commit()
+    flash(f'Trabajo «{titulo}» eliminado.', 'success')
     return redirect(url_for('perfil_alumno', id=alumno_id))
 
 @app.route('/seguimientos/<int:id>/editar', methods=['GET', 'POST'])
@@ -323,6 +332,7 @@ def editar_seguimiento(id):
                     pass
             seguimiento.comentarios = comentarios
             db.session.commit()
+            flash('Seguimiento actualizado correctamente.', 'success')
             return redirect(url_for('seguimiento_alumno', id=alumno.id))
 
     seguimientos = (
@@ -349,6 +359,7 @@ def eliminar_seguimiento(id):
     alumno_id = seguimiento.alumno_id
     db.session.delete(seguimiento)
     db.session.commit()
+    flash('Seguimiento eliminado.', 'success')
     return redirect(url_for('seguimiento_alumno', id=alumno_id))
 
 
