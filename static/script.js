@@ -87,12 +87,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const estado = document.getElementById('dictado-estado');
         const recognition = new SpeechRecognition();
         recognition.lang = 'es-AR';
-        recognition.continuous = true;
+        // continuous=false es más fiable en Android Chrome: cada sesión entrega
+        // solo los resultados de esa utterance, sin acumular sesiones anteriores
+        // (lo que causaba palabras repetidas). Reiniciamos manualmente en 'end'.
+        recognition.continuous = false;
         recognition.interimResults = true;
 
         let escuchando = false;
-        let baseText = '';          // texto ya confirmado en el textarea al iniciar/entre frases
-        let interimActual = '';     // transcripción provisional en curso
+        let baseText = '';
 
         btnDictado.hidden = false;
 
@@ -100,36 +102,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (estado) estado.textContent = mensaje;
         }
 
-        function separador(texto) {
-            // Agrega un espacio si el texto previo no termina en espacio/salto de línea.
+        function sep(texto) {
             if (!texto) return '';
             return /\s$/.test(texto) ? '' : ' ';
         }
 
         function iniciar() {
             baseText = textareaComentarios.value;
-            interimActual = '';
-            try {
-                recognition.start();
-            } catch (e) {
-                // start() lanza si ya está activo; lo ignoramos.
-            }
-        }
-
-        function detener() {
-            recognition.stop();
+            try { recognition.start(); } catch(e) {}
         }
 
         btnDictado.addEventListener('click', function() {
             if (escuchando) {
-                detener();
+                escuchando = false;
+                recognition.stop();
             } else {
+                escuchando = true;
                 iniciar();
             }
         });
 
         recognition.addEventListener('start', function() {
-            escuchando = true;
             btnDictado.classList.add('grabando');
             btnDictado.setAttribute('aria-pressed', 'true');
             btnDictado.querySelector('.dictado-texto').textContent = 'Detener';
@@ -137,46 +130,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         recognition.addEventListener('result', function(event) {
-            let finalNuevo = '';
-            interimActual = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalNuevo += transcript;
-                } else {
-                    interimActual += transcript;
-                }
+            let finalTexto = '';
+            let interimTexto = '';
+            for (let i = 0; i < event.results.length; i++) {
+                const t = event.results[i][0].transcript;
+                if (event.results[i].isFinal) finalTexto += t;
+                else interimTexto += t;
             }
-            if (finalNuevo) {
-                baseText += separador(baseText) + finalNuevo.trim();
-            }
-            const provisional = interimActual
-                ? separador(baseText) + interimActual.trim()
-                : '';
-            textareaComentarios.value = baseText + provisional;
-        });
-
-        recognition.addEventListener('error', function(event) {
-            if (event.error === 'no-speech') {
-                setEstado('No se detectó voz. Probá de nuevo.');
-            } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                setEstado('Permiso de micrófono denegado. Habilitalo en el navegador.');
-            } else if (event.error === 'aborted') {
-                setEstado('');
-            } else {
-                setEstado('Error de dictado: ' + event.error);
+            if (finalTexto) {
+                textareaComentarios.value = baseText + sep(baseText) + finalTexto.trim();
+            } else if (interimTexto) {
+                textareaComentarios.value = baseText + sep(baseText) + interimTexto.trim();
             }
         });
 
         recognition.addEventListener('end', function() {
+            if (escuchando) {
+                // El usuario no detuvo — confirmar lo transcripto y reiniciar
+                baseText = textareaComentarios.value;
+                try { recognition.start(); } catch(e) {}
+            } else {
+                btnDictado.classList.remove('grabando');
+                btnDictado.setAttribute('aria-pressed', 'false');
+                btnDictado.querySelector('.dictado-texto').textContent = 'Dictar';
+                if (estado && estado.textContent.startsWith('Escuchando')) setEstado('');
+            }
+        });
+
+        recognition.addEventListener('error', function(event) {
+            if (event.error === 'aborted' || event.error === 'no-speech') return;
             escuchando = false;
-            btnDictado.classList.remove('grabando');
-            btnDictado.setAttribute('aria-pressed', 'false');
-            btnDictado.querySelector('.dictado-texto').textContent = 'Dictar';
-            // Consolidar cualquier texto provisional que haya quedado.
-            textareaComentarios.value = baseText;
-            if (estado && estado.textContent.startsWith('Escuchando')) {
-                setEstado('');
+            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                setEstado('Permiso de micrófono denegado. Habilitalo en el navegador.');
+            } else {
+                setEstado('Error de dictado: ' + event.error);
             }
         });
     }
