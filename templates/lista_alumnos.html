@@ -60,9 +60,9 @@
             <div class="filtro-item">
                 <label for="estado_cursada">Estado Cursada:</label>
                 <select id="estado_cursada" name="estado_cursada">
-                    <option value="">Todos</option>
-                    <option value="activo" {% if request.args.get('estado_cursada') == 'activo' %}selected{% endif %}>Activo</option>
-                    <option value="abandonó" {% if request.args.get('estado_cursada') == 'abandonó' %}selected{% endif %}>Abandonó</option>
+                    <option value="" {% if estado_cursada_sel == '' %}selected{% endif %}>Todos</option>
+                    <option value="activo" {% if estado_cursada_sel == 'activo' %}selected{% endif %}>Activo</option>
+                    <option value="abandonó" {% if estado_cursada_sel == 'abandonó' %}selected{% endif %}>Abandonó</option>
                 </select>
             </div>
         </div>

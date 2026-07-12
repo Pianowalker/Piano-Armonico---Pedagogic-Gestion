@@ -8,6 +8,7 @@
     <div class="header-actions">
         <a href="{{ url_for('editar_alumno', id=alumno.id) }}" class="btn btn-secondary">Editar</a>
         <a href="{{ url_for('seguimiento_alumno', id=alumno.id) }}" class="btn btn-secondary">Seguimiento de clases</a>
+        <a href="{{ url_for('cerrar_cursada', id=alumno.id) }}" class="btn btn-secondary">Cerrar cursada</a>
         <a href="{{ url_for('lista_alumnos') }}" class="btn btn-link">← Volver</a>
     </div>
 </div>
@@ -166,5 +167,26 @@
     </div>
     {% endif %}
 </div>
+
+{% if alumno.ciclos %}
+<div class="card">
+    <h3>Ciclos anteriores ({{ alumno.ciclos|length }})</h3>
+    <div class="ciclos-list">
+        {% for c in alumno.ciclos %}
+        <a href="{{ url_for('ver_ciclo', id=alumno.id, ciclo_id=c.id) }}" class="ciclo-item">
+            <div class="ciclo-item-main">
+                <span class="ciclo-item-año">{{ c.año }}</span>
+                <span class="ciclo-item-cal">{{ c.año_calendario }}</span>
+            </div>
+            <span class="ciclo-resultado ciclo-resultado-{{ c.resultado | replace(' ', '-') }}">
+                {% if c.resultado == 'aprobó' %}✅ Aprobó{% if c.año_nuevo %} → {{ c.año_nuevo }}{% endif %}
+                {% elif c.resultado == 'abandonó' %}⚠️ Abandonó
+                {% else %}↪️ Cambió de cátedra{% endif %}
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 

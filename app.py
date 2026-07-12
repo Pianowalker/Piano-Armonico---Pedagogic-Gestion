@@ -8,7 +8,7 @@ import unicodedata
 from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import date, datetime, time as dt_time, timedelta
 from typing import Optional
-from models import db, Alumno, TrabajoMusical, SeguimientoClase
+from models import db, Alumno, TrabajoMusical, SeguimientoClase, CicloArchivado
 from validaciones import validar_requisitos_examen
 from sqlalchemy import inspect, text
 
@@ -31,19 +31,33 @@ with app.app_context():
         if 'carrera' not in columns:
             db.session.execute(text('ALTER TABLE alumnos ADD COLUMN carrera VARCHAR(50)'))
             db.session.commit()
-            print("✓ Columna 'carrera' agregada exitosamente a la tabla 'alumnos'")
+            print("Columna 'carrera' agregada exitosamente a la tabla 'alumnos'")
 
         # Migración: agregar columnas 'day' y 'time' (horario) si no existen
         # Nota: NO se validan como obligatorias; pueden ser NULL.
         if 'day' not in columns:
             db.session.execute(text('ALTER TABLE alumnos ADD COLUMN day VARCHAR(20)'))
             db.session.commit()
-            print("✓ Columna 'day' agregada exitosamente a la tabla 'alumnos'")
+            print("Columna 'day' agregada exitosamente a la tabla 'alumnos'")
 
         if 'time' not in columns:
             db.session.execute(text('ALTER TABLE alumnos ADD COLUMN time VARCHAR(5)'))
             db.session.commit()
-            print("✓ Columna 'time' agregada exitosamente a la tabla 'alumnos'")
+            print("Columna 'time' agregada exitosamente a la tabla 'alumnos'")
+
+        # Migración: agregar 'ciclo_id' a trabajos y seguimientos (historial de ciclos).
+        # NULL = pertenece al año en curso; con valor = ciclo archivado.
+        cols_trabajos = [col['name'] for col in inspector.get_columns('trabajos_musicales')]
+        if 'ciclo_id' not in cols_trabajos:
+            db.session.execute(text('ALTER TABLE trabajos_musicales ADD COLUMN ciclo_id INTEGER REFERENCES ciclos_archivados(id)'))
+            db.session.commit()
+            print("Columna 'ciclo_id' agregada a 'trabajos_musicales'")
+
+        cols_seg = [col['name'] for col in inspector.get_columns('seguimientos_clase')]
+        if 'ciclo_id' not in cols_seg:
+            db.session.execute(text('ALTER TABLE seguimientos_clase ADD COLUMN ciclo_id INTEGER REFERENCES ciclos_archivados(id)'))
+            db.session.commit()
+            print("Columna 'ciclo_id' agregada a 'seguimientos_clase'")
     except Exception as e:
         # Si la tabla no existe aún, create_all() la creará con todas las columnas
         # Si hay otro error, lo mostramos pero no detenemos la aplicación
@@ -60,6 +74,15 @@ RANGOS_HORARIOS = {
 }
 
 INTERVALO_MINUTOS = 15
+
+# Años/cursos disponibles (para promover al cerrar una cursada).
+AÑOS = [
+    'FOBA Educación', 'FOBA 2 (canto)', 'FOBA 3',
+    'Profesorado 1', 'Profesorado 2', 'Profesorado 3', 'Profesorado 4',
+    'Técnica',
+]
+
+RESULTADOS_CIERRE = ['aprobó', 'abandonó', 'cambió de cátedra']
 
 
 def _parse_hhmm(value: str) -> dt_time:
@@ -108,12 +131,16 @@ def lista_alumnos():
     año = request.args.get('año', '')
     tipo = request.args.get('tipo', '')
     estado_academico = request.args.get('estado_academico', '')
-    estado_cursada = request.args.get('estado_cursada', '')
+    # Por defecto (sin el parámetro en la URL) mostramos solo alumnos activos.
+    # El valor '' (opción "Todos") desactiva el filtro explícitamente.
+    estado_cursada = request.args.get('estado_cursada')
+    if estado_cursada is None:
+        estado_cursada = 'activo'
     busqueda = request.args.get('busqueda', '')
-    
+
     # Construir query
     query = Alumno.query
-    
+
     if año:
         query = query.filter(Alumno.año == año)
     if tipo:
@@ -141,7 +168,11 @@ def lista_alumnos():
     if alumnos:
         ids = [a.id for a in alumnos]
         trabajos_por_alumno = {}
-        for t in TrabajoMusical.query.filter(TrabajoMusical.alumno_id.in_(ids)).all():
+        trabajos_activos = TrabajoMusical.query.filter(
+            TrabajoMusical.alumno_id.in_(ids),
+            TrabajoMusical.ciclo_id.is_(None),
+        ).all()
+        for t in trabajos_activos:
             trabajos_por_alumno.setdefault(t.alumno_id, []).append(t)
 
         for a in alumnos:
@@ -159,6 +190,7 @@ def lista_alumnos():
         alumnos=alumnos,
         total_alumnos=total_alumnos,
         progreso=progreso,
+        estado_cursada_sel=estado_cursada,
     )
 
 @app.route('/alumnos/nuevo', methods=['GET', 'POST'])
@@ -189,11 +221,17 @@ def nuevo_alumno():
 def perfil_alumno(id):
     """Perfil completo del alumno"""
     alumno = Alumno.query.get_or_404(id)
-    trabajos = TrabajoMusical.query.filter_by(alumno_id=id).order_by(TrabajoMusical.id.desc()).all()
-    
+    # Solo el repertorio activo (del año en curso); lo archivado no cuenta.
+    trabajos = (
+        TrabajoMusical.query
+        .filter_by(alumno_id=id, ciclo_id=None)
+        .order_by(TrabajoMusical.id.desc())
+        .all()
+    )
+
     # Validar requisitos de examen
     requisitos = validar_requisitos_examen(alumno, trabajos)
-    
+
     return render_template(
         'perfil_alumno.html',
         alumno=alumno,
@@ -251,14 +289,14 @@ def seguimiento_alumno(id):
 
     seguimientos = (
         SeguimientoClase.query
-        .filter_by(alumno_id=alumno.id)
+        .filter_by(alumno_id=alumno.id, ciclo_id=None)
         .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
         .all()
     )
 
     trabajos = (
         TrabajoMusical.query
-        .filter_by(alumno_id=alumno.id)
+        .filter_by(alumno_id=alumno.id, ciclo_id=None)
         .order_by(TrabajoMusical.id.desc())
         .all()
     )
@@ -305,6 +343,97 @@ def eliminar_alumno(id):
     db.session.commit()
     flash(f'Alumno {nombre} eliminado.', 'success')
     return redirect(url_for('lista_alumnos'))
+
+@app.route('/alumnos/<int:id>/cerrar-cursada', methods=['GET', 'POST'])
+def cerrar_cursada(id):
+    """Archiva el año en curso de un alumno (repertorio + seguimientos) y,
+    según el resultado, lo promueve al año siguiente o lo marca como inactivo."""
+    alumno = Alumno.query.get_or_404(id)
+    error = None
+
+    if request.method == 'POST':
+        resultado = request.form.get('resultado', '')
+        año_nuevo = (request.form.get('año_nuevo') or '').strip()
+        año_calendario_str = (request.form.get('año_calendario') or '').strip()
+
+        if resultado not in RESULTADOS_CIERRE:
+            error = 'Elegí un resultado válido.'
+        elif resultado == 'aprobó' and año_nuevo not in AÑOS:
+            error = 'Si el alumno aprobó, elegí a qué año pasa.'
+        else:
+            try:
+                año_calendario = int(año_calendario_str)
+            except ValueError:
+                año_calendario = date.today().year
+
+            ciclo = CicloArchivado(
+                alumno_id=alumno.id,
+                año=alumno.año,
+                año_calendario=año_calendario,
+                resultado=resultado,
+                año_nuevo=año_nuevo if resultado == 'aprobó' else None,
+            )
+            db.session.add(ciclo)
+            db.session.flush()  # asigna ciclo.id antes de mover el repertorio
+
+            # Mover el repertorio y los seguimientos activos al ciclo archivado.
+            for t in TrabajoMusical.query.filter_by(alumno_id=alumno.id, ciclo_id=None):
+                t.ciclo_id = ciclo.id
+            for s in SeguimientoClase.query.filter_by(alumno_id=alumno.id, ciclo_id=None):
+                s.ciclo_id = ciclo.id
+
+            if resultado == 'aprobó':
+                alumno.año = año_nuevo
+                alumno.estado_cursada = 'activo'
+                # Si el nuevo año no es de profesorado, la carrera deja de aplicar.
+                if not año_nuevo.startswith('Profesorado'):
+                    alumno.carrera = None
+                mensaje = f'Cursada cerrada. {alumno.nombre_completo} pasa a {año_nuevo}.'
+            else:
+                alumno.estado_cursada = 'abandonó'
+                mensaje = f'Cursada cerrada ({resultado}). {alumno.nombre_completo} queda como inactivo.'
+
+            db.session.commit()
+            flash(mensaje, 'success')
+            return redirect(url_for('perfil_alumno', id=alumno.id))
+
+    return render_template(
+        'cerrar_cursada.html',
+        alumno=alumno,
+        años=AÑOS,
+        resultados=RESULTADOS_CIERRE,
+        año_actual=date.today().year,
+        error=error,
+    )
+
+
+@app.route('/alumnos/<int:id>/ciclo/<int:ciclo_id>')
+def ver_ciclo(id, ciclo_id):
+    """Vista de solo lectura de un ciclo archivado."""
+    alumno = Alumno.query.get_or_404(id)
+    ciclo = CicloArchivado.query.filter_by(id=ciclo_id, alumno_id=alumno.id).first_or_404()
+
+    trabajos = (
+        TrabajoMusical.query
+        .filter_by(ciclo_id=ciclo.id)
+        .order_by(TrabajoMusical.id.desc())
+        .all()
+    )
+    seguimientos = (
+        SeguimientoClase.query
+        .filter_by(ciclo_id=ciclo.id)
+        .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
+        .all()
+    )
+
+    return render_template(
+        'ver_ciclo.html',
+        alumno=alumno,
+        ciclo=ciclo,
+        trabajos=trabajos,
+        seguimientos=seguimientos,
+    )
+
 
 @app.route('/alumnos/<int:id>/trabajo/nuevo', methods=['GET', 'POST'])
 def nuevo_trabajo(id):
@@ -387,14 +516,14 @@ def editar_seguimiento(id):
 
     seguimientos = (
         SeguimientoClase.query
-        .filter_by(alumno_id=alumno.id)
+        .filter_by(alumno_id=alumno.id, ciclo_id=None)
         .order_by(SeguimientoClase.fecha.desc(), SeguimientoClase.id.desc())
         .all()
     )
 
     trabajos = (
         TrabajoMusical.query
-        .filter_by(alumno_id=alumno.id)
+        .filter_by(alumno_id=alumno.id, ciclo_id=None)
         .order_by(TrabajoMusical.id.desc())
         .all()
     )

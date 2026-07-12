@@ -76,6 +76,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // En "Cerrar cursada", el campo "Pasa al año" solo aplica si el alumno aprobó.
+    const resultadoSelect = document.getElementById('resultado');
+    const añoNuevoGroup = document.getElementById('año-nuevo-group');
+    const añoNuevoSelect = document.getElementById('año_nuevo');
+    if (resultadoSelect && añoNuevoGroup) {
+        function toggleAñoNuevo() {
+            const aprobo = resultadoSelect.value === 'aprobó';
+            añoNuevoGroup.style.display = aprobo ? 'block' : 'none';
+            if (añoNuevoSelect) añoNuevoSelect.required = aprobo;
+        }
+        toggleAñoNuevo();
+        resultadoSelect.addEventListener('change', toggleAñoNuevo);
+    }
+
     // Auto-ocultar los mensajes flash de éxito después de unos segundos.
     // Los de error/otros se dejan hasta que el usuario los cierre a mano.
     document.querySelectorAll('.flash-success').forEach(function(flash) {

@@ -49,9 +49,27 @@ class Alumno(db.Model):
         cascade='all, delete-orphan',
         order_by='SeguimientoClase.fecha'
     )
-    
+    # Ciclos lectivos archivados (años cursados en el pasado)
+    ciclos = db.relationship(
+        'CicloArchivado',
+        backref='alumno',
+        lazy=True,
+        cascade='all, delete-orphan',
+        order_by='CicloArchivado.año_calendario.desc(), CicloArchivado.id.desc()'
+    )
+
     def __repr__(self):
         return f'<Alumno {self.apellido}, {self.nombre}>'
+
+    @property
+    def trabajos_activos(self):
+        """Repertorio del ciclo en curso (no archivado)."""
+        return [t for t in self.trabajos if t.ciclo_id is None]
+
+    @property
+    def seguimientos_activos(self):
+        """Seguimientos del ciclo en curso (no archivados)."""
+        return [s for s in self.seguimientos if s.ciclo_id is None]
     
     @property
     def nombre_completo(self):
@@ -70,7 +88,9 @@ class TrabajoMusical(db.Model):
     estado_estudio = db.Column(db.String(20), nullable=False)  # 'iniciado', 'en proceso', 'resuelto'
     comentarios = db.Column(db.Text)
     alumno_id = db.Column(db.Integer, db.ForeignKey('alumnos.id'), nullable=False)
-    
+    # Ciclo archivado al que pertenece. NULL = repertorio activo (año en curso).
+    ciclo_id = db.Column(db.Integer, db.ForeignKey('ciclos_archivados.id'), nullable=True)
+
     def __repr__(self):
         return f'<TrabajoMusical {self.titulo}>'
 
@@ -83,6 +103,8 @@ class SeguimientoClase(db.Model):
     fecha = db.Column(db.Date, nullable=False, default=date.today)
     comentarios = db.Column(db.Text, nullable=False)
     alumno_id = db.Column(db.Integer, db.ForeignKey('alumnos.id'), nullable=False)
+    # Ciclo archivado al que pertenece. NULL = seguimiento del año en curso.
+    ciclo_id = db.Column(db.Integer, db.ForeignKey('ciclos_archivados.id'), nullable=True)
 
     # Trabajos musicales abordados en esta clase (muchos-a-muchos).
     trabajos = db.relationship(
@@ -94,4 +116,24 @@ class SeguimientoClase(db.Model):
 
     def __repr__(self):
         return f'<SeguimientoClase {self.fecha} - Alumno {self.alumno_id}>'
+
+
+class CicloArchivado(db.Model):
+    """Un año lectivo ya cerrado de un alumno: su repertorio y seguimientos
+    quedan congelados acá para consulta y no cuentan para el año en curso."""
+    __tablename__ = 'ciclos_archivados'
+
+    id = db.Column(db.Integer, primary_key=True)
+    alumno_id = db.Column(db.Integer, db.ForeignKey('alumnos.id'), nullable=False)
+    año = db.Column(db.String(50), nullable=False)          # el año que cursó (ej. 'FOBA 2')
+    año_calendario = db.Column(db.Integer, nullable=False)   # año calendario en que se cerró (ej. 2026)
+    resultado = db.Column(db.String(30), nullable=False)     # 'aprobó', 'abandonó', 'cambió de cátedra'
+    año_nuevo = db.Column(db.String(50))                     # a qué año pasó (solo si aprobó)
+    fecha = db.Column(db.Date, nullable=False, default=date.today)
+
+    trabajos = db.relationship('TrabajoMusical', backref='ciclo', lazy=True)
+    seguimientos = db.relationship('SeguimientoClase', backref='ciclo', lazy=True)
+
+    def __repr__(self):
+        return f'<CicloArchivado {self.año} ({self.año_calendario}) - Alumno {self.alumno_id}>'
 

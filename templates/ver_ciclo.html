@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ciclo.año }} ({{ ciclo.año_calendario }}) - {{ alumno.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{{ alumno.nombre_completo }} — {{ ciclo.año }} <span class="ciclo-anio-cal">({{ ciclo.año_calendario }})</span></h2>
+    <div class="header-actions">
+        <a href="{{ url_for('perfil_alumno', id=alumno.id) }}" class="btn btn-link">← Volver al perfil</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="ciclo-meta">
+        <span class="badge badge-secondary">Ciclo archivado · solo consulta</span>
+        <span class="ciclo-resultado ciclo-resultado-{{ ciclo.resultado | replace(' ', '-') }}">
+            {% if ciclo.resultado == 'aprobó' %}
+                ✅ Aprobó{% if ciclo.año_nuevo %} y pasó a {{ ciclo.año_nuevo }}{% endif %}
+            {% elif ciclo.resultado == 'abandonó' %}
+                ⚠️ Abandonó
+            {% else %}
+                ↪️ Cambió de cátedra
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Repertorio del ciclo ({{ trabajos|length }})</h3>
+    {% if trabajos %}
+    <div class="trabajos-list">
+        {% for trabajo in trabajos %}
+        <div class="trabajo-item trabajo-{{ trabajo.estado_estudio | replace(' ', '-') }}">
+            <div class="trabajo-header">
+                <h4>{{ trabajo.titulo }}</h4>
+            </div>
+            <div class="trabajo-badges">
+                <span class="badge badge-info">{{ trabajo.tipo }}</span>
+                <span class="badge badge-info">{{ trabajo.estilo }}</span>
+                <span class="badge badge-info">{{ trabajo.formato }}</span>
+                <span class="badge {% if trabajo.estado_estudio == 'resuelto' %}badge-success{% elif trabajo.estado_estudio == 'en proceso' %}badge-warning{% else %}badge-info{% endif %}">
+                    {{ trabajo.estado_estudio }}
+                </span>
+                {% if trabajo.tipo == 'arreglo' %}
+                <span class="badge badge-info">Arreglo: {{ trabajo.autoría_arreglo }}</span>
+                {% endif %}
+            </div>
+            {% if trabajo.comentarios %}
+            <div class="trabajo-comentarios">
+                <strong>Comentarios:</strong> {{ trabajo.comentarios }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">No se registró repertorio en este ciclo.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Seguimientos del ciclo ({{ seguimientos|length }})</h3>
+    {% if seguimientos %}
+    <div class="seguimientos-list">
+        {% for s in seguimientos %}
+        <div class="seguimiento-item">
+            <div class="seguimiento-header">
+                <span class="seguimiento-fecha">{{ s.fecha.strftime('%d/%m/%Y') if s.fecha else 'Sin fecha' }}</span>
+            </div>
+            <div class="seguimiento-comentarios">
+                <p>{{ s.comentarios }}</p>
+            </div>
+            {% if s.trabajos %}
+            <div class="seguimiento-trabajos">
+                {% for t in s.trabajos %}
+                <span class="chip-trabajo">🎵 {{ t.titulo }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">No se registraron seguimientos en este ciclo.</p>
+    {% endif %}
+</div>
+{% endblock %}
