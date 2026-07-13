@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Repertorio - Piano Armónico{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Búsqueda de repertorio</h2>
+    <div class="header-info">
+        <span class="recuento-alumnos">{{ trabajos|length }} trabajo{{ 's' if trabajos|length != 1 else '' }}</span>
+    </div>
+</div>
+
+<div class="filtros">
+    <form method="GET" action="{{ url_for('repertorio') }}" class="filtros-form">
+        <div class="filtros-grid">
+            <div class="filtro-item">
+                <label for="busqueda">Título:</label>
+                <input type="text" id="busqueda" name="busqueda"
+                       value="{{ filtros.busqueda }}"
+                       placeholder="Ej: Libertango">
+            </div>
+
+            <div class="filtro-item">
+                <label for="estilo">Estilo:</label>
+                <select id="estilo" name="estilo">
+                    <option value="">Todos</option>
+                    <option value="jazz" {% if filtros.estilo == 'jazz' %}selected{% endif %}>Jazz</option>
+                    <option value="tango" {% if filtros.estilo == 'tango' %}selected{% endif %}>Tango</option>
+                    <option value="folclore" {% if filtros.estilo == 'folclore' %}selected{% endif %}>Folclore</option>
+                    <option value="académico" {% if filtros.estilo == 'académico' %}selected{% endif %}>Académico</option>
+                    <option value="otro" {% if filtros.estilo == 'otro' %}selected{% endif %}>Otro</option>
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label for="tipo">Tipo:</label>
+                <select id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    <option value="estudio" {% if filtros.tipo == 'estudio' %}selected{% endif %}>Estudio</option>
+                    <option value="obra" {% if filtros.tipo == 'obra' %}selected{% endif %}>Obra</option>
+                    <option value="arreglo" {% if filtros.tipo == 'arreglo' %}selected{% endif %}>Arreglo</option>
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label for="formato">Formato:</label>
+                <select id="formato" name="formato">
+                    <option value="">Todos</option>
+                    <option value="piano solo" {% if filtros.formato == 'piano solo' %}selected{% endif %}>Piano solo</option>
+                    <option value="acompañamiento" {% if filtros.formato == 'acompañamiento' %}selected{% endif %}>Acompañamiento</option>
+                    <option value="piano y voz" {% if filtros.formato == 'piano y voz' %}selected{% endif %}>Piano y voz</option>
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label for="estado_estudio">Estado:</label>
+                <select id="estado_estudio" name="estado_estudio">
+                    <option value="">Todos</option>
+                    <option value="iniciado" {% if filtros.estado_estudio == 'iniciado' %}selected{% endif %}>Iniciado</option>
+                    <option value="en proceso" {% if filtros.estado_estudio == 'en proceso' %}selected{% endif %}>En proceso</option>
+                    <option value="resuelto" {% if filtros.estado_estudio == 'resuelto' %}selected{% endif %}>Resuelto</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filtros-actions">
+            <button type="submit" class="btn btn-secondary">Filtrar</button>
+            <a href="{{ url_for('repertorio') }}" class="btn btn-link">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+{% if trabajos %}
+<div class="trabajos-list">
+    {% for trabajo in trabajos %}
+    <div class="trabajo-item trabajo-{{ trabajo.estado_estudio | replace(' ', '-') }}">
+        <div class="trabajo-header">
+            <h4>{{ trabajo.titulo }}</h4>
+            <a href="{{ url_for('perfil_alumno', id=trabajo.alumno_id) }}" class="btn btn-sm btn-secondary">
+                Ver a {{ trabajo.alumno.nombre_completo }}
+            </a>
+        </div>
+        <div class="trabajo-badges">
+            <span class="badge badge-info">{{ trabajo.tipo }}</span>
+            <span class="badge badge-info">{{ trabajo.estilo }}</span>
+            <span class="badge badge-info">{{ trabajo.formato }}</span>
+            <span class="badge {% if trabajo.estado_estudio == 'resuelto' %}badge-success{% elif trabajo.estado_estudio == 'en proceso' %}badge-warning{% else %}badge-info{% endif %}">
+                {{ trabajo.estado_estudio }}
+            </span>
+            {% if trabajo.tipo == 'arreglo' %}
+            <span class="badge badge-info">Arreglo: {{ trabajo.autoría_arreglo }}</span>
+            {% endif %}
+        </div>
+        {% if trabajo.comentarios %}
+        <div class="trabajo-comentarios">
+            <strong>Comentarios:</strong> {{ trabajo.comentarios }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    {% if hay_filtros %}
+    <p>No se encontró repertorio activo con esos filtros.</p>
+    {% else %}
+    <p>No hay repertorio cargado todavía.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

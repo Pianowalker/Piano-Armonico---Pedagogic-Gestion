@@ -193,6 +193,48 @@ def lista_alumnos():
         estado_cursada_sel=estado_cursada,
     )
 
+
+@app.route('/repertorio')
+def repertorio():
+    """Búsqueda de repertorio: qué alumnos trabajaron tal obra/estilo/formato.
+    Busca solo en el repertorio activo (el histórico queda dentro de cada
+    ciclo archivado, consultable desde el perfil del alumno)."""
+    estilo = request.args.get('estilo', '')
+    tipo = request.args.get('tipo', '')
+    formato = request.args.get('formato', '')
+    estado_estudio = request.args.get('estado_estudio', '')
+    busqueda = request.args.get('busqueda', '').strip()
+
+    query = TrabajoMusical.query.filter(TrabajoMusical.ciclo_id.is_(None))
+
+    if estilo:
+        query = query.filter(TrabajoMusical.estilo == estilo)
+    if tipo:
+        query = query.filter(TrabajoMusical.tipo == tipo)
+    if formato:
+        query = query.filter(TrabajoMusical.formato == formato)
+    if estado_estudio:
+        query = query.filter(TrabajoMusical.estado_estudio == estado_estudio)
+
+    trabajos = query.join(Alumno).order_by(Alumno.apellido, Alumno.nombre, TrabajoMusical.titulo).all()
+
+    if busqueda:
+        busqueda_normalizada = normalizar_busqueda(busqueda)
+        trabajos = [t for t in trabajos if busqueda_normalizada in normalizar_busqueda(t.titulo)]
+
+    hay_filtros = any([estilo, tipo, formato, estado_estudio, busqueda])
+
+    return render_template(
+        'repertorio.html',
+        trabajos=trabajos,
+        hay_filtros=hay_filtros,
+        filtros={
+            'estilo': estilo, 'tipo': tipo, 'formato': formato,
+            'estado_estudio': estado_estudio, 'busqueda': busqueda,
+        },
+    )
+
+
 @app.route('/alumnos/nuevo', methods=['GET', 'POST'])
 def nuevo_alumno():
     """Crear nuevo alumno"""
