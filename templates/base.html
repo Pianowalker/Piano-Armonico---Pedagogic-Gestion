@@ -23,7 +23,7 @@
             <nav class="site-nav">
                 <a href="{{ url_for('lista_alumnos') }}" class="{{ 'active' if request.endpoint not in ['horarios', 'repertorio'] else '' }}">Alumnos</a>
                 <a href="{{ url_for('repertorio') }}" class="{{ 'active' if request.endpoint == 'repertorio' else '' }}">Repertorio</a>
-                <a href="{{ url_for('horarios') }}" class="{{ 'active' if request.endpoint == 'horarios' else '' }}">Horarios</a>
+                <a href="{{ url_for('horarios') }}" class="site-nav-horarios {{ 'active' if request.endpoint == 'horarios' else '' }}">Horarios</a>
                 <span class="site-nav-divider"></span>
                 <a href="{{ url_for('horarios', day='lunes') }}" class="site-nav-dia">Lun</a>
                 <a href="{{ url_for('horarios', day='martes') }}" class="site-nav-dia">Mar</a>
