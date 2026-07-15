@@ -1151,6 +1151,44 @@ textarea::placeholder {
     color: var(--ink);
 }
 
+.trabajos-check-vacio {
+    color: var(--muted);
+    font-size: 0.86rem;
+    margin: 0;
+}
+
+/* Alta rápida de trabajo desde el seguimiento */
+.nuevo-trabajo-inline {
+    margin-top: 0.7rem;
+    padding: 0.9rem 1rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+}
+
+.nti-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+}
+
+.nti-grid #nt-titulo {
+    grid-column: 1 / -1;
+}
+
+.nti-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.nti-error {
+    color: var(--danger);
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
 /* Chips de trabajos abordados en el historial de seguimientos */
 .seguimiento-trabajos {
     display: flex;

@@ -47,12 +47,16 @@
             <span id="dictado-estado" class="form-help dictado-estado" role="status" aria-live="polite"></span>
         </div>
 
-        {% if trabajos %}
         <div class="form-group">
-            <label>Trabajos abordados en esta clase</label>
+            <div class="label-row">
+                <label>Trabajos abordados en esta clase</label>
+                <button type="button" id="btn-nuevo-trabajo" class="btn btn-sm btn-secondary"
+                        data-url="{{ url_for('nuevo_trabajo', id=alumno.id) }}">＋ Agregar trabajo</button>
+            </div>
+
             {% set marcados = request.form.getlist('trabajos') if request.form
                               else (editando.trabajos | map(attribute='id') | map('string') | list if editando else []) %}
-            <div class="trabajos-check">
+            <div class="trabajos-check" id="trabajos-check">
                 {% for t in trabajos %}
                 <label class="trabajo-check">
                     <input type="checkbox" name="trabajos" value="{{ t.id }}"
@@ -61,9 +65,45 @@
                     <span class="badge {% if t.estado_estudio == 'resuelto' %}badge-success{% elif t.estado_estudio == 'en proceso' %}badge-warning{% else %}badge-info{% endif %}">{{ t.estado_estudio }}</span>
                 </label>
                 {% endfor %}
+                <p class="trabajos-check-vacio" {% if trabajos %}hidden{% endif %}>Este alumno todavía no tiene trabajos registrados.</p>
+            </div>
+
+            <!-- Alta rápida de trabajo (se envía por fetch; inputs sin name para
+                 que no se manden con el seguimiento). -->
+            <div class="nuevo-trabajo-inline" id="nuevo-trabajo-inline" hidden>
+                <div class="nti-grid">
+                    <input type="text" id="nt-titulo" placeholder="Título de la obra">
+                    <select id="nt-tipo" aria-label="Tipo">
+                        <option value="obra">Obra</option>
+                        <option value="estudio">Estudio</option>
+                        <option value="arreglo">Arreglo</option>
+                    </select>
+                    <select id="nt-estilo" aria-label="Estilo">
+                        <option value="">— Estilo —</option>
+                        <option value="jazz">Jazz</option>
+                        <option value="tango">Tango</option>
+                        <option value="folclore">Folclore</option>
+                        <option value="académico">Académico</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                    <select id="nt-formato" aria-label="Formato">
+                        <option value="piano solo">Piano solo</option>
+                        <option value="acompañamiento">Acompañamiento</option>
+                        <option value="piano y voz">Piano y voz</option>
+                    </select>
+                    <select id="nt-estado" aria-label="Estado">
+                        <option value="iniciado">Iniciado</option>
+                        <option value="en proceso">En proceso</option>
+                        <option value="resuelto">Resuelto</option>
+                    </select>
+                </div>
+                <div class="nti-actions">
+                    <button type="button" id="btn-guardar-trabajo" class="btn btn-sm btn-primary">Agregar</button>
+                    <button type="button" id="btn-cancelar-trabajo" class="btn btn-sm btn-link">Cancelar</button>
+                    <span id="nt-error" class="nti-error" role="alert"></span>
+                </div>
             </div>
         </div>
-        {% endif %}
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">{% if editando %}Guardar cambios{% else %}Guardar seguimiento{% endif %}</button>

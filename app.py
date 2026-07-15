@@ -479,22 +479,42 @@ def ver_ciclo(id, ciclo_id):
 
 @app.route('/alumnos/<int:id>/trabajo/nuevo', methods=['GET', 'POST'])
 def nuevo_trabajo(id):
-    """Agregar trabajo musical a un alumno"""
+    """Agregar trabajo musical a un alumno.
+    Si la petición es AJAX (desde el seguimiento) devuelve JSON en vez de
+    redirigir, para poder agregar el trabajo sin salir de la página."""
     alumno = Alumno.query.get_or_404(id)
-    
+    es_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if request.method == 'POST':
+        titulo = (request.form.get('titulo') or '').strip()
+        tipo = request.form.get('tipo', '')
+        estilo = request.form.get('estilo', '')
+        formato = request.form.get('formato', '')
+        estado_estudio = request.form.get('estado_estudio', '')
+
+        if es_ajax and not (titulo and tipo and estilo and formato and estado_estudio):
+            return {'error': 'Faltan datos del trabajo.'}, 400
+
         trabajo = TrabajoMusical(
-            titulo=request.form['titulo'],
-            tipo=request.form['tipo'],
-            estilo=request.form['estilo'],
-            formato=request.form['formato'],
+            titulo=titulo,
+            tipo=tipo,
+            estilo=estilo,
+            formato=formato,
             autoría_arreglo=request.form.get('autoría_arreglo', 'propio'),
-            estado_estudio=request.form['estado_estudio'],
+            estado_estudio=estado_estudio,
             comentarios=request.form.get('comentarios', ''),
             alumno_id=id
         )
         db.session.add(trabajo)
         db.session.commit()
+
+        if es_ajax:
+            return {
+                'id': trabajo.id,
+                'titulo': trabajo.titulo,
+                'estado_estudio': trabajo.estado_estudio,
+            }
+
         flash(f'Trabajo «{trabajo.titulo}» agregado.', 'success')
         return redirect(url_for('perfil_alumno', id=id))
 

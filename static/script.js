@@ -90,6 +90,88 @@ document.addEventListener('DOMContentLoaded', function() {
         resultadoSelect.addEventListener('change', toggleAñoNuevo);
     }
 
+    // Alta rápida de trabajo desde el seguimiento: crea el trabajo por fetch
+    // (sin recargar) y lo agrega tildado a la lista de trabajos abordados.
+    const btnNuevoTrabajo = document.getElementById('btn-nuevo-trabajo');
+    const inlineForm = document.getElementById('nuevo-trabajo-inline');
+    if (btnNuevoTrabajo && inlineForm) {
+        const trabajosCheck = document.getElementById('trabajos-check');
+        const vacio = trabajosCheck.querySelector('.trabajos-check-vacio');
+        const errorSpan = document.getElementById('nt-error');
+        const guardar = document.getElementById('btn-guardar-trabajo');
+        const cancelar = document.getElementById('btn-cancelar-trabajo');
+        const inputTitulo = document.getElementById('nt-titulo');
+
+        btnNuevoTrabajo.addEventListener('click', function() {
+            inlineForm.hidden = !inlineForm.hidden;
+            if (!inlineForm.hidden) inputTitulo.focus();
+        });
+
+        cancelar.addEventListener('click', function() {
+            inlineForm.hidden = true;
+            errorSpan.textContent = '';
+        });
+
+        guardar.addEventListener('click', async function() {
+            const titulo = inputTitulo.value.trim();
+            const estilo = document.getElementById('nt-estilo').value;
+            errorSpan.textContent = '';
+            if (!titulo) { errorSpan.textContent = 'Poné un título.'; inputTitulo.focus(); return; }
+            if (!estilo) { errorSpan.textContent = 'Elegí el estilo.'; return; }
+
+            guardar.disabled = true;
+            try {
+                const body = new URLSearchParams({
+                    titulo: titulo,
+                    tipo: document.getElementById('nt-tipo').value,
+                    estilo: estilo,
+                    formato: document.getElementById('nt-formato').value,
+                    estado_estudio: document.getElementById('nt-estado').value,
+                });
+                const resp = await fetch(btnNuevoTrabajo.dataset.url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: body.toString(),
+                });
+                if (!resp.ok) throw new Error('respuesta ' + resp.status);
+                const data = await resp.json();
+
+                // Construir el checkbox nuevo, ya tildado.
+                const label = document.createElement('label');
+                label.className = 'trabajo-check';
+                const badgeClase = data.estado_estudio === 'resuelto' ? 'badge-success'
+                    : (data.estado_estudio === 'en proceso' ? 'badge-warning' : 'badge-info');
+                const check = document.createElement('input');
+                check.type = 'checkbox';
+                check.name = 'trabajos';
+                check.value = data.id;
+                check.checked = true;
+                const spanTitulo = document.createElement('span');
+                spanTitulo.className = 'trabajo-check-titulo';
+                spanTitulo.textContent = data.titulo;
+                const spanBadge = document.createElement('span');
+                spanBadge.className = 'badge ' + badgeClase;
+                spanBadge.textContent = data.estado_estudio;
+                label.append(check, spanTitulo, spanBadge);
+
+                if (vacio) vacio.hidden = true;
+                trabajosCheck.appendChild(label);
+
+                // Resetear y cerrar el mini-formulario.
+                inputTitulo.value = '';
+                document.getElementById('nt-estilo').value = '';
+                inlineForm.hidden = true;
+            } catch (e) {
+                errorSpan.textContent = 'No se pudo agregar el trabajo. Probá de nuevo.';
+            } finally {
+                guardar.disabled = false;
+            }
+        });
+    }
+
     // Auto-ocultar los mensajes flash de éxito después de unos segundos.
     // Los de error/otros se dejan hasta que el usuario los cierre a mano.
     document.querySelectorAll('.flash-success').forEach(function(flash) {
